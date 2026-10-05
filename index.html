@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Méloé · Rétro-planning Prépa Médecine</title>
+<style>
+:root{
+  --bg:#f4f7fb;--card:#fff;--ink:#182033;--muted:#6f7b91;--line:#dfe6f1;
+  --accent:#3157d5;--accent2:#7a4ce0;--good:#2f9e67;--warn:#e3a229;--danger:#d65252;
+  --shadow:0 12px 28px rgba(35,55,90,.08);--radius:18px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:linear-gradient(180deg,#eef3fb 0,#f8fafd 38%,#f4f7fb 100%);color:var(--ink)}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.app{min-height:100vh;display:grid;grid-template-columns:260px 1fr}
+aside{background:#17213a;color:white;padding:24px 18px;position:sticky;top:0;height:100vh}
+.brand{font-size:22px;font-weight:800;margin-bottom:6px}.brand small{display:block;font-weight:500;color:#aeb8d0;font-size:12px;margin-top:5px}
+.nav{margin-top:28px;display:grid;gap:8px}
+.nav button{border:0;background:transparent;color:#cdd5e6;text-align:left;padding:12px 14px;border-radius:12px}
+.nav button.active,.nav button:hover{background:#263452;color:#fff}
+.aside-foot{position:absolute;bottom:18px;left:18px;right:18px;color:#aeb8d0;font-size:12px}
+main{padding:26px;min-width:0}
+.topbar{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:20px}
+h1{font-size:28px;margin:0} .subtitle{color:var(--muted);margin-top:5px;font-size:14px}
+.actions{display:flex;gap:9px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:#fff;padding:10px 14px;border-radius:11px;color:var(--ink)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.good{background:var(--good);border-color:var(--good);color:#fff}
+.btn.danger{background:#fff0f0;border-color:#f0c5c5;color:#a83232}
+.grid{display:grid;gap:16px}.stats{grid-template-columns:repeat(4,minmax(0,1fr))}
+.card{background:rgba(255,255,255,.96);border:1px solid #e7ecf4;border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+.stat-label{color:var(--muted);font-size:13px}.stat-value{font-size:29px;font-weight:800;margin-top:8px}.stat-hint{font-size:12px;color:var(--muted);margin-top:5px}
+.progress{height:10px;background:#edf1f6;border-radius:999px;overflow:hidden}.progress>span{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:999px}
+.section{display:none}.section.active{display:block}
+.two{grid-template-columns:1.4fr .9fr}
+.three{grid-template-columns:1.2fr 1fr 1fr}
+.section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px}
+.section-title h2{font-size:18px;margin:0}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+label{font-size:12px;color:var(--muted);font-weight:700;display:block;margin-bottom:6px}
+input,select,textarea{width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+textarea{min-height:80px;resize:vertical}
+.item-row{display:grid;grid-template-columns:1.7fr .7fr .7fr .8fr auto;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid #edf1f6}
+.item-row:last-child{border-bottom:0}.badge{display:inline-flex;padding:5px 8px;border-radius:999px;font-size:11px;font-weight:700}
+.badge.todo{background:#edf1ff;color:#3157d5}.badge.done{background:#e9f8f0;color:#258451}.badge.warn{background:#fff5dc;color:#9b6d00}
+.mini{font-size:12px;color:var(--muted)}
+.calendar-head{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;margin-bottom:7px;color:var(--muted);font-size:12px;text-align:center}
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}
+.day{min-height:110px;background:#fafcff;border:1px solid var(--line);border-radius:12px;padding:8px;overflow:hidden}
+.day.muted{opacity:.45}.day .num{font-size:12px;font-weight:800}.session{margin-top:6px;padding:6px 7px;border-radius:8px;background:#edf2ff;color:#284cb7;font-size:11px;line-height:1.25}
+.session.done{background:#e9f8f0;color:#297a52;text-decoration:line-through}
+.session checkpoint{display:block}
+.checkpoint{background:#fff4d8!important;color:#926500!important;border:1px dashed #d8ad47}
+.table{width:100%;border-collapse:collapse}.table th,.table td{padding:10px 9px;border-bottom:1px solid #edf1f6;text-align:left;font-size:13px}.table th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+.bar{height:8px;background:#edf1f6;border-radius:999px;overflow:hidden}.bar span{display:block;height:100%;background:linear-gradient(90deg,var(--good),#55c38c)}
+.empty{padding:28px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:13px}
+.timeline{position:relative;padding-left:20px}.timeline:before{content:"";position:absolute;left:6px;top:4px;bottom:4px;width:2px;background:#dce3ee}
+.milestone{position:relative;margin:0 0 14px}.milestone:before{content:"";position:absolute;left:-18px;top:5px;width:10px;height:10px;border-radius:50%;background:var(--accent)}
+.milestone strong{display:block}.milestone small{color:var(--muted)}
+.toast{position:fixed;right:20px;bottom:20px;background:#17213a;color:#fff;padding:12px 16px;border-radius:11px;box-shadow:var(--shadow);opacity:0;pointer-events:none;transform:translateY(10px);transition:.2s}
+.toast.show{opacity:1;transform:translateY(0)}
+@media(max-width:1000px){.app{grid-template-columns:1fr}aside{height:auto;position:relative}.nav{display:flex;overflow:auto}.aside-foot{display:none}.stats,.two,.three{grid-template-columns:1fr 1fr}.day{min-height:90px}.item-row{grid-template-columns:1.4fr .7fr .7fr auto}.item-row .hide-sm{display:none}}
+@media(max-width:650px){main{padding:14px}.topbar{align-items:flex-start;flex-direction:column}.stats,.two,.three,.form-grid{grid-template-columns:1fr}.calendar{gap:3px}.calendar-head{gap:3px}.day{min-height:78px;padding:5px}.session{font-size:9px;padding:4px}.item-row{grid-template-columns:1fr auto}.item-row>*:not(:first-child):not(:last-child){display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+  <div class="brand">Méloé Médecine<small>PASS S1 · Programme intégré · V2</small></div>
+  <div class="nav">
+    <button class="active" data-page="dashboard">Tableau de bord</button>
+    <button data-page="programme">Programme & items</button>
+    <button data-page="planning">Rétro-planning</button>
+    <button data-page="calendrier">Calendrier</button>
+    <button data-page="etapes">Points d'étape</button>
+    <button data-page="parametres">Paramètres</button>
+  </div>
+  <div class="aside-foot">V2 · Données enregistrées uniquement sur cet appareil.</div>
+</aside>
+
+<main>
+<div class="topbar">
+  <div><h1 id="pageTitle">Tableau de bord</h1><div class="subtitle" id="pageSubtitle">Suivi global de la préparation.</div></div>
+  <div class="actions">
+    <button class="btn" onclick="exportData()">Exporter JSON</button>
+    <label class="btn" style="cursor:pointer">Importer JSON<input id="importFile" type="file" accept=".json" hidden></label>
+    <button class="btn primary" onclick="generatePlan()">Générer le rétro-planning</button>
+  </div>
+</div>
+
+<section id="dashboard" class="section active"><div class="card" style="margin-bottom:16px">Programme PASS S1 intégré : 80 références, 5 UE. Les lignes sans intitulé sont désactivées jusqu’à leur complément. Date butoir : 24 novembre 2026.<p class="mini">Avancement à renseigner par Méloé dans Programme &amp; items. Charge provisoire : 2 h par jour en semaine, à confirmer dans Paramètres. Week-end : 15 h au total, réparties en 7 h 30 par jour. Une séance de 60 min est proposée par défaut pour chaque item.</p></div><div id="ueProgress" class="card" style="margin-bottom:16px"></div>
+  <div class="grid stats">
+    <div class="card"><div class="stat-label">Progression globale</div><div class="stat-value" id="stProgress">0%</div><div class="progress"><span id="stProgressBar" style="width:0"></span></div></div>
+    <div class="card"><div class="stat-label">Items au programme</div><div class="stat-value" id="stItems">0</div><div class="stat-hint" id="stDoneItems">0 item maîtrisé</div></div>
+    <div class="card"><div class="stat-label">Séances réalisées</div><div class="stat-value" id="stSessions">0</div><div class="stat-hint" id="stPlanned">0 planifiées</div></div>
+    <div class="card"><div class="stat-label">Jours restants</div><div class="stat-value" id="stDays">—</div><div class="stat-hint" id="stDeadline">Date butoir non définie</div></div>
+  </div>
+
+  <div class="grid two" style="margin-top:16px">
+    <div class="card">
+      <div class="section-title"><h2>Prochaines séances</h2><button class="btn" onclick="go('planning')">Voir tout</button></div>
+      <div id="nextSessions"></div>
+    </div>
+    <div class="card">
+      <div class="section-title"><h2>Progression par item</h2></div>
+      <div id="itemProgress"></div>
+    </div>
+  </div>
+</section>
+
+<section id="programme" class="section">
+  <div class="grid two">
+    <div class="card">
+      <div class="section-title"><h2>Ajouter un item</h2></div>
+      <div class="form-grid">
+        <div style="grid-column:1/-1"><label>Intitulé</label><input id="itemName" placeholder="Ex. Anatomie cardiaque"></div>
+        <div><label>UE / Bloc</label><input id="itemBlock" placeholder="Ex. UE2"></div>
+        <div><label>Priorité</label><select id="itemPriority"><option value="3">Haute</option><option value="2" selected>Normale</option><option value="1">Faible</option></select></div>
+        <div><label>Nombre de passages souhaité</label><input id="itemTarget" type="number" min="1" max="20" value="3"></div>
+        <div><label>Durée indicative / séance (min)</label><input id="itemDuration" type="number" min="10" max="300" value="60"></div>
+      </div>
+      <button class="btn primary" style="margin-top:12px" onclick="addItem()">Ajouter au programme</button>
+    </div>
+    <div class="card">
+      <div class="section-title"><h2>Import rapide</h2></div>
+      <label>Un item par ligne</label>
+      <textarea id="bulkItems" placeholder="Anatomie cardiaque&#10;Histologie épithéliale&#10;Biochimie des glucides"></textarea>
+      <button class="btn" style="margin-top:10px" onclick="bulkAdd()">Ajouter la liste</button>
+    </div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <div class="section-title"><h2>Items du programme</h2><span class="mini" id="itemCountLabel"></span></div>
+    <div class="form-grid" style="margin-bottom:12px"><input id="itemSearch" placeholder="Rechercher une référence, une notion…" oninput="renderItems()"><select id="ueFilter" onchange="renderItems()"><option value="">Toutes les UE</option><option>UE1A</option><option>UE1B</option><option>UE1E</option><option>UE1F</option><option>UE1G</option></select></div><div id="itemsList"></div>
+  </div>
+</section>
+
+<section id="planning" class="section">
+  <div class="card">
+    <div class="section-title"><h2>Rétro-planning généré</h2><div class="actions"><button class="btn" onclick="clearPlan()">Vider</button><button class="btn primary" onclick="generatePlan()">Régénérer</button></div></div>
+    <div id="planStatus" role="status" style="margin-bottom:12px"></div><div id="planningList"></div>
+  </div>
+</section>
+
+<section id="calendrier" class="section">
+  <div class="card">
+    <div class="section-title">
+      <h2 id="monthLabel"></h2>
+      <div class="actions"><button class="btn" onclick="changeMonth(-1)">←</button><button class="btn" onclick="changeMonth(1)">→</button></div>
+    </div>
+    <div class="calendar-head"><div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div></div>
+    <div id="calendar" class="calendar"></div>
+  </div>
+</section>
+
+<section id="etapes" class="section">
+  <div class="grid two">
+    <div class="card">
+      <div class="section-title"><h2>Créer un point d'étape</h2></div>
+      <div class="form-grid">
+        <div><label>Date</label><input id="cpDate" type="date"></div>
+        <div><label>Objectif de progression (%)</label><input id="cpTarget" type="number" min="0" max="100" value="50"></div>
+        <div style="grid-column:1/-1"><label>Nom</label><input id="cpName" placeholder="Ex. Fin du premier tour"></div>
+      </div>
+      <button class="btn primary" style="margin-top:12px" onclick="addCheckpoint()">Ajouter</button>
+    </div>
+    <div class="card"><div class="section-title"><h2>Jalons</h2></div><div class="timeline" id="checkpointList"></div></div>
+  </div>
+</section>
+
+<section id="parametres" class="section">
+  <div class="card">
+    <div class="section-title"><h2>Paramètres du rétro-planning</h2></div>
+    <div class="form-grid">
+      <div><label>Date de début</label><input id="startDate" type="date"></div>
+      <div><label>Date butoir</label><input id="deadline" type="date"></div>
+      <div><label>Heures / jour du lundi au vendredi (provisoire : 2 h)</label><input id="weekdayHours" type="number" min="0" max="24" step="0.5"></div>
+      <div><label>Heures du week-end au total (samedi + dimanche)</label><input id="weekendHours" type="number" min="0" max="48" step="0.5"></div>
+      <div><label>Espacement minimum entre deux passages (jours)</label><input id="spacingDays" type="number" min="1" max="60"></div>
+      <div><label>Jours sans travail (une date par ligne)</label><textarea id="offDates" placeholder="2026-10-18"></textarea></div>
+    </div>
+    <p class="mini">Le budget du week-end est partagé à parts égales. Mettre 0 h pour désactiver une période. Les durées sont des estimations modifiables par item. Les objectifs des points d’étape servent au suivi ; ils ne contraignent pas le calcul du planning.</p><button class="btn good" style="margin-top:14px" onclick="saveSettings()">Enregistrer les paramètres</button>
+  </div>
+</section>
+</main>
+</div>
+<div class="toast" id="toast"></div>
+
+<style>
+.item-row{grid-template-columns:minmax(0,1fr) 110px 100px auto}.item-row strong{overflow-wrap:anywhere}
+dialog{border:1px solid var(--line);border-radius:18px;width:min(620px,95vw);max-height:90vh;overflow:auto;padding:22px;color:var(--ink)}dialog::backdrop{background:#17213a99}
+@media(max-width:650px){.item-row{grid-template-columns:1fr auto}.item-row>*:not(:first-child):not(:last-child){display:block;grid-column:1}.item-row button{grid-column:2;grid-row:1}.nav button{white-space:nowrap}.actions .btn{font-size:12px}.calendar{overflow-x:auto}.session{cursor:pointer}}
+</style>
+<dialog id="itemDialog"><h2>Réglages de l’item</h2><input id="editId" type="hidden"><div class="form-grid">
+<div style="grid-column:1/-1"><label>Intitulé</label><input id="editName"></div>
+<div><label>UE</label><input id="editBlock"></div><div><label>Discipline</label><input id="editDiscipline"></div>
+<div><label>Passages souhaités au total</label><input id="editTarget" type="number" min="1" max="20"></div><div><label>Passages réalisés avant ce planning</label><input id="editPrior" type="number" min="0" max="100"></div>
+<div><label>Durée d’un passage (min)</label><input id="editDuration" type="number" min="10" max="1440"></div><div><label>Priorité</label><select id="editPriority"><option value="3">Haute</option><option value="2">Normale</option><option value="1">Faible</option></select></div>
+<div><label>Inclure dans le planning</label><select id="editActive"><option value="1">Oui</option><option value="0">Non</option></select></div><div><label>Maîtrise estimée (%)</label><input id="editMastery" type="number" min="0" max="100"></div><div><label>Notes</label><textarea id="editNotes"></textarea></div></div>
+<p class="mini">Les passages antérieurs s’ajoutent aux séances validées. Après modification des objectifs ou des durées, régénérer le planning pour mettre à jour les séances à venir.</p>
+<div class="actions"><button class="btn primary" onclick="saveItemEdit()">Enregistrer</button><button class="btn" onclick="itemDialog.close()">Fermer</button><button class="btn danger" onclick="if(confirm('Supprimer cet item et ses séances ?')){deleteItem(editId.value);itemDialog.close()}">Supprimer</button></div></dialog>
+<script>
+const KEY="meloe_med_retro_v2_pass";
+const PROGRAMME=[{"id": "UE1A-1", "reference": "UE1A-1", "name": "La documentation scientifique et professionnelle", "active": true, "discipline": "Information–communication", "block": "UE1A", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1A-2", "reference": "UE1A-2", "name": "La communication professionnelle", "active": true, "discipline": "Information–communication", "block": "UE1A", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1A-3", "reference": "UE1A-3", "name": "Les relations de soin et les habiletés communicationnelles", "active": true, "discipline": "Information–communication", "block": "UE1A", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1A-4", "reference": "UE1A-4", "name": "Les concepts, expériences et grandes découvertes en santé", "active": true, "discipline": "", "block": "UE1A", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1A-5", "reference": "UE1A-5", "name": "Le raisonnement et la démarche clinique", "active": true, "discipline": "Épistémologie de la santé", "block": "UE1A", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1A-6", "reference": "UE1A-6", "name": "Les biais cognitifs", "active": true, "discipline": "", "block": "UE1A", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1A-7", "reference": "UE1A-7", "name": "Le système de santé et ses organisations", "active": true, "discipline": "", "block": "UE1A", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1A-8", "reference": "UE1A-8", "name": "Gestion et management en santé", "active": true, "discipline": "Gestion et management en santé", "block": "UE1A", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1A-9", "reference": "UE1A-9", "name": "Les compétences et relations du professionnel de santé (Médecine)", "active": true, "discipline": "Les compétences et relations du professionnel de santé (Médecine)", "block": "UE1A", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1A-10", "reference": "UE1A-10", "name": "Les compétences et relations du professionnel de santé (Maïeutique)", "active": true, "discipline": "Les compétences et relations du professionnel de santé (Maïeutique)", "block": "UE1A", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1A-11", "reference": "UE1A-11", "name": "Les compétences et relations du professionnel de santé (Odontologie)", "active": true, "discipline": "Les compétences et relations du professionnel de santé (Odontologie)", "block": "UE1A", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1A-12", "reference": "UE1A-12", "name": "Les compétences et relations du professionnel de santé (Pharmacie)", "active": true, "discipline": "Les compétences et relations du professionnel de santé (Pharmacie)", "block": "UE1A", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1A-13", "reference": "UE1A-13", "name": "La démarche qualité en santé", "active": true, "discipline": "La démarche qualité en santé", "block": "UE1A", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1A-14", "reference": "UE1A-14", "name": "Les systèmes d’information en santé", "active": true, "discipline": "Les systèmes d’information en santé", "block": "UE1A", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1A-15", "reference": "UE1A-15", "name": "La prévention et la promotion de la santé", "active": true, "discipline": "Économie de la santé", "block": "UE1A", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1A-16", "reference": "UE1A-16", "name": "L’éthique et la déontologie du professionnel de santé", "active": true, "discipline": "Sciences sociales", "block": "UE1A", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1A-17", "reference": "UE1A-17", "name": "La télémédecine", "active": true, "discipline": "", "block": "UE1A", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1A-18", "reference": "UE1A-18", "name": "L’intelligence artificielle", "active": true, "discipline": "Technologies de la santé", "block": "UE1A", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1A-19", "reference": "UE1A-19", "name": "Les dispositifs médicaux", "active": true, "discipline": "Ingénierie de la santé", "block": "UE1A", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1A-20", "reference": "UE1A-20", "name": "La lecture critique d'article", "active": true, "discipline": "Information–communication", "block": "UE1A", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1B-1", "reference": "UE1B-1", "name": "Les grands enjeux de santé publique", "active": true, "discipline": "Santé publique", "block": "UE1B", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1B-2", "reference": "UE1B-2", "name": "Les symptômes et signes cliniques", "active": true, "discipline": "Sémiologie médicale", "block": "UE1B", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1B-3", "reference": "UE1B-3", "name": "Les appareils et les systèmes", "active": true, "discipline": "Anatomie", "block": "UE1B", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1B-4", "reference": "UE1B-4", "name": "Les molécules organiques", "active": true, "discipline": "Chimie organique", "block": "UE1B", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1B-5", "reference": "UE1B-5", "name": "Les équilibres chimiques et les interactions physiques", "active": true, "discipline": "Chimie générale", "block": "UE1B", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1B-6", "reference": "UE1B-6", "name": "La relation structure-fonction des biomolécules", "active": true, "discipline": "Biochimie", "block": "UE1B", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1B-7", "reference": "UE1B-7", "name": "L’homéostasie générale", "active": true, "discipline": "Physiologie", "block": "UE1B", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1B-8", "reference": "UE1B-8", "name": "L’homéostasie générale", "active": true, "discipline": "Physiologie", "block": "UE1B", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1B-9", "reference": "UE1B-9", "name": "L’homéostasie cellulaire", "active": true, "discipline": "Biologie cellulaire", "block": "UE1B", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1B-10", "reference": "UE1B-10", "name": "Les méthodes et techniques histologiques", "active": true, "discipline": "Histologie", "block": "UE1B", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1B-11", "reference": "UE1B-11", "name": "Diversité, structure et organisation des génomes", "active": true, "discipline": "Biologie moléculaire", "block": "UE1B", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1B-13", "reference": "UE1B-13", "name": "La reproduction et l’embryogenèse", "active": true, "discipline": "Biologie du développement et de la reproduction", "block": "UE1B", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1B-14", "reference": "UE1B-14", "name": "Les déterminants génétiques de la maladie et de la santé", "active": true, "discipline": "Biologie du développement et de la reproduction", "block": "UE1B", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1B-15", "reference": "UE1B-15", "name": "Expression du génome", "active": true, "discipline": "Biologie moléculaire", "block": "UE1B", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1B-16", "reference": "UE1B-16", "name": "Le modèle biopsychosocial", "active": true, "discipline": "Rééducation-réadaptation", "block": "UE1B", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1B-17", "reference": "UE1B-17", "name": "Les médicaments et autres produits de santé", "active": true, "discipline": "Pharmacologie", "block": "UE1B", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1B-18", "reference": "UE1B-18", "name": "L’individu et la santé", "active": true, "discipline": "Psychologie de la santé", "block": "UE1B", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1B-19", "reference": "UE1B-19", "name": "La stratégie de soin du patient", "active": true, "discipline": "Anthropologie-sociologie de la santé", "block": "UE1B", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1B-20", "reference": "UE1B-20", "name": "Biologie du développement et de la reproduction", "active": true, "discipline": "Biologie du développement et de la reproduction", "block": "UE1B", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1B-21", "reference": "UE1B-21", "name": "Intitulé à compléter", "active": false, "discipline": "", "block": "UE1B", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1B-22", "reference": "UE1B-22", "name": "Intitulé à compléter", "active": false, "discipline": "", "block": "UE1B", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1E-1", "reference": "UE1E-1", "name": "Le concept et les politiques de santé-environnement", "active": true, "discipline": "Santé publique", "block": "UE1E", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1E-2", "reference": "UE1E-2", "name": "Le concept et les politiques de santé-environnement", "active": true, "discipline": "Santé publique", "block": "UE1E", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1E-3", "reference": "UE1E-3", "name": "Le concept et les politiques de santé-environnement", "active": true, "discipline": "Santé publique", "block": "UE1E", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1E-4", "reference": "UE1E-4", "name": "Les agents infectieux", "active": true, "discipline": "Biologie moléculaire", "block": "UE1E", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1E-5", "reference": "UE1E-5", "name": "Les agents infectieux", "active": true, "discipline": "Biologie moléculaire", "block": "UE1E", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1E-6", "reference": "UE1E-6", "name": "Les agents infectieux", "active": true, "discipline": "Biologie moléculaire", "block": "UE1E", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1E-7", "reference": "UE1E-7", "name": "Les perturbations chimiques", "active": true, "discipline": "Pharmacotoxicologie", "block": "UE1E", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1E-8", "reference": "UE1E-8", "name": "Les perturbations génétiques", "active": true, "discipline": "Biologie du développement et de la reproduction", "block": "UE1E", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1E-9", "reference": "UE1E-9", "name": "Les facteurs psychosociaux", "active": true, "discipline": "Psychologie de la santé", "block": "UE1E", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1E-10", "reference": "UE1E-10", "name": "Nature et santé", "active": true, "discipline": "Anthropologie de la santé", "block": "UE1E", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1E-11", "reference": "UE1E-11", "name": "Nature et santé", "active": true, "discipline": "Anthropologie de la santé", "block": "UE1E", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1F-1", "reference": "UE1F-1", "name": "Sémiologie appliquée", "active": true, "discipline": "Sémiologie médicale", "block": "UE1F", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1F-2", "reference": "UE1F-2", "name": "Appareils et systèmes", "active": true, "discipline": "Anatomie", "block": "UE1F", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1F-3", "reference": "UE1F-3", "name": "Embryogenèse", "active": true, "discipline": "Anatomie", "block": "UE1F", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1F-4", "reference": "UE1F-4", "name": "Anatomie de surface", "active": true, "discipline": "Anatomie", "block": "UE1F", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1F-5", "reference": "UE1F-5", "name": "Le système endocrinien et sa régulation", "active": true, "discipline": "Biologie du développement et de la reproduction", "block": "UE1F", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1F-6", "reference": "UE1F-6", "name": "Les médiateurs chimiques des processus biologiques", "active": true, "discipline": "Chimie organique", "block": "UE1F", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1F-7", "reference": "UE1F-7", "name": "L’intégrité et les remaniements du génome", "active": true, "discipline": "Biologie moléculaire", "block": "UE1F", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1F-13", "reference": "UE1F-13", "name": "La différenciation des cellules et des tissus", "active": true, "discipline": "Histologie", "block": "UE1F", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1F-14", "reference": "UE1F-14", "name": "La différenciation des cellules et des tissus", "active": true, "discipline": "Histologie", "block": "UE1F", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1F-15", "reference": "UE1F-15", "name": "Les pathologies génétiques", "active": true, "discipline": "Génétique médicale", "block": "UE1F", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1G-1", "reference": "UE1G-1", "name": "Sémiologie des gestes et soins d’urgence", "active": true, "discipline": "Sémiologie médicale", "block": "UE1G", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1G-2", "reference": "UE1G-2", "name": "Méthodes d’analyse du génome", "active": true, "discipline": "Biologie moléculaire", "block": "UE1G", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1G-3", "reference": "UE1G-3", "name": "Méthodes d’analyse du génome", "active": true, "discipline": "Biologie moléculaire", "block": "UE1G", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1G-4", "reference": "UE1G-4", "name": "Analyses génomiques", "active": true, "discipline": "Biologie médicale", "block": "UE1G", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1G-5", "reference": "UE1G-5", "name": "Analyses biologiques", "active": true, "discipline": "Biologie médicale", "block": "UE1G", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1G-6", "reference": "UE1G-6", "name": "Les méthodes histologiques et approches histopathologiques", "active": true, "discipline": "Histologie", "block": "UE1G", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1G-7", "reference": "UE1G-7", "name": "Intitulé à compléter", "active": false, "discipline": "", "block": "UE1G", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1G-8", "reference": "UE1G-8", "name": "L’état acidobasique", "active": true, "discipline": "Physiologie médicale", "block": "UE1G", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1G-9", "reference": "UE1G-9", "name": "L’état acidobasique", "active": true, "discipline": "Physiologie médicale", "block": "UE1G", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1G-10", "reference": "UE1G-10", "name": "Les corrections optiques", "active": true, "discipline": "Physique", "block": "UE1G", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1G-11", "reference": "UE1G-11", "name": "Les corrections optiques", "active": true, "discipline": "Physique", "block": "UE1G", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1G-12", "reference": "UE1G-12", "name": "La classification structurale des médicaments", "active": true, "discipline": "Chimie thérapeutique", "block": "UE1G", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1G-13", "reference": "UE1G-13", "name": "Les cibles et mécanismes d’action des médicaments", "active": true, "discipline": "Pharmacologie fondamentale", "block": "UE1G", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1G-14", "reference": "UE1G-14", "name": "Les cibles et mécanismes d’action des médicaments", "active": true, "discipline": "Pharmacologie fondamentale", "block": "UE1G", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1G-15", "reference": "UE1G-15", "name": "Les méthodes cliniques", "active": true, "discipline": "Psychologie de la santé", "block": "UE1G", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1G-16", "reference": "UE1G-16", "name": "Intitulé à compléter", "active": false, "discipline": "", "block": "UE1G", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1G-17", "reference": "UE1G-17", "name": "Intitulé à compléter", "active": false, "discipline": "", "block": "UE1G", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}, {"id": "UE1G-18", "reference": "UE1G-18", "name": "Intitulé à compléter", "active": false, "discipline": "", "block": "UE1G", "priority": 2, "target": 3, "duration": 60, "mastery": 0, "priorDone": 0, "notes": ""}];
+const dateISO=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const todayISO=()=>dateISO(new Date());
+const uid=()=>Math.random().toString(36).slice(2,10);
+let monthCursor=new Date(); monthCursor.setDate(1);
+let state=load()||{
+  settings:{startDate:"2026-10-05",deadline:"2026-11-24",weekdayHours:2,weekendHours:15,spacingDays:3,offDates:[]},
+  items:PROGRAMME,sessions:[],checkpoints:[],unscheduled:[]
+};
+function load(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){toast("Sauvegarde locale indisponible. Exportez vos données en JSON.")}renderAll()}
+function toast(t){const e=document.getElementById("toast");e.textContent=t;e.classList.add("show");setTimeout(()=>e.classList.remove("show"),1800)}
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]))}
+function fmt(d){if(!d)return"—";return new Date(d+"T12:00:00").toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"})}
+function daysDiff(a,b){return Math.ceil((new Date(b+"T12:00:00")-new Date(a+"T12:00:00"))/86400000)}
+function go(id){
+ document.querySelectorAll(".section").forEach(x=>x.classList.remove("active"));
+ document.querySelectorAll(".nav button").forEach(x=>x.classList.toggle("active",x.dataset.page===id));
+ document.getElementById(id).classList.add("active");
+ const titles={dashboard:["Tableau de bord","Suivi global de la préparation."],programme:["Programme & items","Construire et piloter la liste des notions à travailler."],planning:["Rétro-planning","Plan de travail calculé jusqu'à la date butoir."],calendrier:["Calendrier","Vue mensuelle des séances et points d'étape."],etapes:["Points d'étape","Jalons réglables pour contrôler l'avancement."],parametres:["Paramètres","Règles de génération du planning."]};
+ document.getElementById("pageTitle").textContent=titles[id][0];document.getElementById("pageSubtitle").textContent=titles[id][1];
+ if(id==="calendrier")renderCalendar();
+}
+document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>go(b.dataset.page));
+
+function addItem(){
+ const name=document.getElementById("itemName").value.trim(); if(!name)return toast("Saisissez un intitulé.");
+ state.items.push({id:uid(),name,block:itemBlock.value.trim(),priority:+itemPriority.value,target:+itemTarget.value||3,duration:+itemDuration.value||60,mastery:0});
+ itemName.value=""; save();toast("Item ajouté.");
+}
+function bulkAdd(){
+ const lines=bulkItems.value.split(/\n+/).map(x=>x.trim()).filter(Boolean);
+ lines.forEach(name=>state.items.push({id:uid(),name,block:"",priority:2,target:3,duration:60,mastery:0}));
+ bulkItems.value="";save();toast(lines.length+" item(s) ajouté(s).");
+}
+function deleteItem(id){state.items=state.items.filter(x=>x.id!==id);state.sessions=state.sessions.filter(s=>s.itemId!==id);save()}
+function setMastery(id,v){const i=state.items.find(x=>x.id===id);if(i){i.mastery=+v;save()}}
+function itemDoneCount(id){return +(state.items.find(i=>i.id===id)?.priorDone||0)+state.sessions.filter(s=>s.itemId===id&&s.done).length}
+function itemPlannedCount(id){return state.sessions.filter(s=>s.itemId===id).length}
+function renderItems(){
+ itemCountLabel.textContent=state.items.length+" item(s)";
+ const q=itemSearch.value.toLocaleLowerCase('fr').trim(),ue=ueFilter.value;
+ const list=state.items.filter(i=>(!ue||i.block===ue)&&(!q||[i.name,i.reference,i.block,i.discipline].join(' ').toLocaleLowerCase('fr').includes(q)));
+ itemsList.innerHTML=list.length?list.map(i=>`<div class="item-row"><div><strong>${esc(i.reference||i.id)} — ${esc(i.name)}</strong><div class="mini">${esc(i.block)} · ${esc(i.discipline)} · ${i.duration} min · maîtrise ${i.mastery||0}%${i.active===false?" · Non planifié":""}</div></div><div><span class="badge todo">${itemDoneCount(i.id)}/${i.target} passages</span></div><div class="bar"><span style="width:${Math.min(100,itemDoneCount(i.id)/i.target*100)}%"></span></div><button class="btn" onclick="editItem('${i.id}')">Régler</button></div>`).join(''):'<div class="empty">Aucun item trouvé.</div>';
+}
+function saveSettings(){
+ const settings={startDate:startDate.value,deadline:deadline.value,weekdayHours:Number(weekdayHours.value),weekendHours:Number(weekendHours.value),spacingDays:Number(spacingDays.value),offDates:offDates.value.split(/\s+/).filter(Boolean)};
+ if(!settings.startDate||!settings.deadline||settings.deadline<settings.startDate||!Number.isFinite(settings.weekdayHours)||settings.weekdayHours<0||settings.weekdayHours>24||!Number.isFinite(settings.weekendHours)||settings.weekendHours<0||settings.weekendHours>48||!Number.isInteger(settings.spacingDays)||settings.spacingDays<1||settings.spacingDays>60||settings.offDates.some(d=>!validDate(d))) {toast('Vérifiez les dates, les heures et les jours sans travail.');return false}
+ state.settings=settings;save();toast('Paramètres enregistrés. Régénérez pour les appliquer.');return true;
+}
+function loadSettingsUI(){
+ startDate.value=state.settings.startDate;deadline.value=state.settings.deadline;
+ weekdayHours.value=state.settings.weekdayHours??2;weekendHours.value=state.settings.weekendHours??15;
+ spacingDays.value=state.settings.spacingDays??3;offDates.value=(state.settings.offDates||[]).join('\n');
+}
+function generatePlan(){
+ if(!saveSettings())return;
+ const cfg=state.settings,start=cfg.startDate>todayISO()?cfg.startDate:todayISO();
+ if(cfg.deadline<start)return toast('La date butoir est passée.');
+ if(daysDiff(start,cfg.deadline)>730)return toast('Choisissez une période de deux ans maximum.');
+ if(!state.items.length)return toast('Ajoutez un item.');
+ const kept=state.sessions.filter(s=>s.done),used={};
+ for(const s of kept){const i=state.items.find(i=>i.id===s.itemId);used[s.date]=(used[s.date]||0)+(s.duration||i?.duration||60)}
+ const dates=[];
+ for(let d=new Date(start+'T12:00:00');dateISO(d)<=cfg.deadline;d.setDate(d.getDate()+1)){
+   const iso=dateISO(d),capacity=(d.getDay()===0||d.getDay()===6?cfg.weekendHours/2:cfg.weekdayHours)*60;
+   if(!(cfg.offDates||[]).includes(iso)&&capacity>0)dates.push({date:iso,left:Math.max(0,Math.floor(capacity)-(used[iso]||0))});
+ }
+ const last={},remaining={},unscheduled=[];let made=[];
+ for(const i of state.items){last[i.id]=kept.filter(s=>s.itemId===i.id).map(s=>s.date).sort().at(-1)||'';remaining[i.id]=Math.max(0,i.target-itemDoneCount(i.id))}
+ // Round-robin tours: every item gets a first opportunity before the next tour.
+ const order=state.items.filter(i=>i.active!==false).sort((a,b)=>b.priority-a.priority||a.id.localeCompare(b.id));
+ for(let tour=0;tour<20;tour++)for(const i of order){
+   if(remaining[i.id]<=0)continue;
+   const duration=Math.max(10,Number(i.duration)||60),slot=dates.find(d=>d.left>=duration&&(!last[i.id]||daysDiff(last[i.id],d.date)>=cfg.spacingDays));
+   if(!slot){unscheduled.push({itemId:i.id,count:remaining[i.id]});remaining[i.id]=0;continue}
+   const pass=itemDoneCount(i.id)+made.filter(s=>s.itemId===i.id).length+1;
+   made.push({id:uid(),itemId:i.id,date:slot.date,pass,duration,done:false});slot.left-=duration;last[i.id]=slot.date;remaining[i.id]--;
+ }
+ state.sessions=[...kept,...made].sort((a,b)=>a.date.localeCompare(b.date));state.unscheduled=unscheduled;state.planGenerated=true;
+ save();toast(unscheduled.length?'Planning calculé : certaines séances restent à placer.':'Planning généré.');go('planning');
+}
+function clearPlan(){if(!confirm("Effacer les séances à venir ? Les séances réalisées seront conservées."))return;state.sessions=state.sessions.filter(s=>s.done);state.unscheduled=[];state.planGenerated=false;save()}
+function toggleSession(id){const s=state.sessions.find(x=>x.id===id);if(s){s.done=!s.done;save()}}
+function renderPlanning(){
+ const missing=(state.unscheduled||[]).reduce((n,x)=>n+x.count,0);
+ planStatus.innerHTML=missing?`<div class="badge warn">${missing} séance(s) non placée(s) : ajuster durées, passages, espacement ou disponibilités.</div><details><summary>Voir les items concernés</summary>${state.unscheduled.map(x=>{const i=state.items.find(i=>i.id===x.itemId);return `<p>${esc(i?.reference||'')} ${esc(i?.name||'')} : ${x.count} passage(s)</p>`}).join('')}</details>`:(state.planGenerated?'Toutes les séances restantes ont été placées.':'Réglez votre avancement, puis générez le planning.');
+ if(!state.sessions.length){planningList.innerHTML='<div class="empty">Aucun planning généré.</div>';return}
+ const by={};state.sessions.forEach(s=>(by[s.date]??=[]).push(s));
+ planningList.innerHTML=Object.keys(by).sort().map(d=>`<div style="padding:11px 0;border-bottom:1px solid #edf1f6"><strong>${fmt(d)}</strong>${by[d].map(s=>{const i=state.items.find(x=>x.id===s.itemId);return `<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;margin-top:8px"><div><span class="badge ${s.done?"done":"todo"}">Passage ${s.pass}</span> ${esc(i?.reference||"")} ${esc(i?.name||"Item supprimé")} <span class="mini">· ${s.duration||i?.duration||60} min</span></div><button class="btn ${s.done?"":"good"}" onclick="toggleSession('${s.id}')">${s.done?"Annuler":"Fait"}</button></div>`}).join("")}</div>`).join("");
+}
+function globalProgress(){
+ const target=state.items.filter(i=>i.active!==false).reduce((n,i)=>n+i.target,0),done=state.items.filter(i=>i.active!==false).reduce((n,i)=>n+Math.min(i.target,itemDoneCount(i.id)),0);
+ return Math.round(done/Math.max(1,target)*100);
+}
+function renderDashboard(){
+ ueProgress.innerHTML='<h2 style="font-size:18px">Progression par UE</h2>'+[...new Set(state.items.map(i=>i.block||'Sans UE'))].map(ue=>{
+ const list=state.items.filter(i=>(i.block||'Sans UE')===ue&&i.active!==false),target=list.reduce((n,i)=>n+i.target,0),done=list.reduce((n,i)=>n+Math.min(i.target,itemDoneCount(i.id)),0),p=Math.round(done/Math.max(1,target)*100);
+ return `<div style="margin:12px 0"><div class="mini">${esc(ue)} · ${list.length} items · ${p}% des passages</div><div class="bar"><span style="width:${p}%"></span></div></div>`}).join('');
+ const gp=globalProgress();stProgress.textContent=gp+"%";stProgressBar.style.width=gp+"%";stItems.textContent=state.items.length;
+ stDoneItems.textContent=state.items.filter(i=>itemDoneCount(i.id)>=i.target).length+" item(s) objectif atteint";
+ stSessions.textContent=state.items.reduce((n,i)=>n+itemDoneCount(i.id),0);stPlanned.textContent=state.sessions.length+" planifiées";
+ if(state.settings.deadline){stDays.textContent=Math.max(0,daysDiff(todayISO(),state.settings.deadline));stDeadline.textContent="Butoir : "+fmt(state.settings.deadline)}else{stDays.textContent="—";stDeadline.textContent="Date butoir non définie"}
+ const next=state.sessions.filter(s=>!s.done).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,6);
+ nextSessions.innerHTML=next.length?next.map(s=>{const i=state.items.find(x=>x.id===s.itemId);return `<div style="padding:9px 0;border-bottom:1px solid #edf1f6"><strong>${esc(i?.name||"")}</strong><div class="mini">${fmt(s.date)} · passage ${s.pass}${s.date<todayISO()?" · En retard":""}</div></div>`}).join(""):'<div class="empty">Aucune séance à venir.</div>';
+ itemProgress.innerHTML=state.items.length?state.items.map(i=>{const p=Math.min(100,Math.round(itemDoneCount(i.id)/Math.max(1,i.target)*100));return `<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px"><span>${esc(i.name)}</span><strong>${p}%</strong></div><div class="bar"><span style="width:${p}%"></span></div></div>`}).join(""):'<div class="empty">Ajoutez des items.</div>';
+}
+function addCheckpoint(){
+ if(!validDate(cpDate.value)||!cpName.value.trim()||!Number.isFinite(Number(cpTarget.value))||Number(cpTarget.value)<0||Number(cpTarget.value)>100)return toast("Date et nom requis.");
+ state.checkpoints.push({id:uid(),date:cpDate.value,name:cpName.value.trim(),target:+cpTarget.value});
+ cpName.value="";save()
+}
+function editCheckpoint(id){const c=state.checkpoints.find(x=>x.id===id);if(!c)return;const name=prompt('Nom du point d’étape',c.name);if(name===null)return;const date=prompt('Date (AAAA-MM-JJ)',c.date);if(date===null)return;const raw=prompt('Objectif en %',c.target);if(raw===null)return;const target=Number(raw);if(!name.trim()||!validDate(date)||!Number.isFinite(target)||target<0||target>100)return toast('Valeurs incorrectes');Object.assign(c,{name:name.trim(),date,target});save()}
+function deleteCheckpoint(id){state.checkpoints=state.checkpoints.filter(c=>c.id!==id);save()}
+function renderCheckpoints(){
+ const cps=[...state.checkpoints].sort((a,b)=>a.date.localeCompare(b.date));
+ checkpointList.innerHTML=cps.length?cps.map(c=>`<div class="milestone"><strong>${esc(c.name)}</strong><small>${fmt(c.date)} · objectif ${c.target}% · progression actuelle ${globalProgress()}%${c.date<=todayISO()?(globalProgress()>=c.target?" · objectif atteint":" · objectif à atteindre"):""}</small><div><button class="btn danger" style="margin-top:6px;padding:5px 8px" onclick="editCheckpoint('${c.id}')">Modifier</button><button class="btn danger" onclick="deleteCheckpoint('${c.id}')">Supprimer</button></div></div>`).join(""):'<div class="empty">Aucun point d’étape.</div>';
+}
+function renderCalendar(){
+ const y=monthCursor.getFullYear(),m=monthCursor.getMonth();monthLabel.textContent=monthCursor.toLocaleDateString("fr-FR",{month:"long",year:"numeric"});
+ const first=new Date(y,m,1),offset=(first.getDay()+6)%7,start=new Date(y,m,1-offset);
+ let html="";
+ for(let k=0;k<42;k++){const d=new Date(start);d.setDate(start.getDate()+k);const iso=dateISO(d),muted=d.getMonth()!==m;
+  const ss=state.sessions.filter(s=>s.date===iso),cps=state.checkpoints.filter(c=>c.date===iso);
+  html+=`<div class="day ${muted?"muted":""}"><div class="num">${d.getDate()}</div>${cps.map(c=>`<div class="session checkpoint">◆ ${esc(c.name)}</div>`).join("")}${ss.slice(0,4).map(s=>{const i=state.items.find(x=>x.id===s.itemId);return `<div class="session ${s.done?"done":""}" onclick="toggleSession('${s.id}')">${esc(i?.reference||i?.name||"")}</div>`}).join("")}${ss.length>4?`<button class="btn" style="padding:3px" onclick="go('planning')">+${ss.length-4}</button>`:""}</div>`;
+ }
+ calendar.innerHTML=html;
+}
+function changeMonth(n){monthCursor.setMonth(monthCursor.getMonth()+n);renderCalendar()}
+function exportData(){
+ const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}),a=document.createElement("a");
+ a.href=URL.createObjectURL(blob);a.download="meloe_retroplanning_PASS_S1_V2.json";a.click();URL.revokeObjectURL(a.href)
+}
+importFile.onchange=async e=>{const f=e.target.files[0];if(!f)return;try{
+ const incoming=JSON.parse(await f.text());validateImport(incoming);
+ if(!confirm('Remplacer les données actuelles par cette sauvegarde ?'))return;
+ state=incoming;state.unscheduled=[];state.planGenerated=false;state.settings={weekdayHours:2,weekendHours:15,spacingDays:3,offDates:[],...state.settings};save();loadSettingsUI();toast('Données importées.');
+ }catch(err){toast('Fichier invalide : '+err.message)}finally{e.target.value=''}};
+
+function validDate(d){return typeof d==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&Number.isFinite(new Date(d+'T12:00:00').getTime())&&dateISO(new Date(d+'T12:00:00'))===d}
+function validateImport(s){
+ if(!s||!s.settings||!Array.isArray(s.items)||!Array.isArray(s.sessions)||!Array.isArray(s.checkpoints))throw Error('structure incorrecte');
+ const ids=new Set();for(const i of s.items){if(typeof i.id!=='string'||!/^[a-zA-Z0-9_-]+$/.test(i.id)||ids.has(i.id)||typeof i.name!=='string'||!Number.isInteger(i.target)||i.target<1||i.target>20||!Number.isFinite(i.duration)||i.duration<10||i.duration>1440||!Number.isInteger(i.priority)||i.priority<1||i.priority>3||!Number.isFinite(i.mastery??0)||(i.mastery??0)<0||(i.mastery??0)>100||!Number.isInteger(i.priorDone??0)||(i.priorDone??0)<0)throw Error('item incorrect');ids.add(i.id)}
+ const sessionIds=new Set();for(const v of s.sessions){if(!ids.has(v.itemId)||typeof v.id!=='string'||!/^[a-zA-Z0-9_-]+$/.test(v.id)||sessionIds.has(v.id)||!validDate(v.date)||typeof v.done!=='boolean'||!Number.isInteger(v.pass)||v.pass<1||(v.duration!==undefined&&(!Number.isFinite(v.duration)||v.duration<10||v.duration>1440)))throw Error('séance incorrecte');sessionIds.add(v.id)}
+ for(const c of s.checkpoints)if(typeof c.id!=='string'||!/^[a-zA-Z0-9_-]+$/.test(c.id)||!validDate(c.date)||typeof c.name!=='string'||!Number.isFinite(c.target)||c.target<0||c.target>100)throw Error('jalon incorrect');
+ if(!validDate(s.settings.startDate)||!validDate(s.settings.deadline))throw Error('dates incorrectes');
+}
+function editItem(id){const i=state.items.find(i=>i.id===id);if(!i)return;editActive.value=i.active===false?'0':'1';editId.value=id;editName.value=i.name;editBlock.value=i.block;editDiscipline.value=i.discipline||'';editTarget.value=i.target;editPrior.value=i.priorDone||0;editDuration.value=i.duration;editPriority.value=i.priority;editMastery.value=i.mastery||0;editNotes.value=i.notes||'';itemDialog.showModal()}
+function saveItemEdit(){
+ const i=state.items.find(i=>i.id===editId.value),target=Number(editTarget.value),prior=Number(editPrior.value),duration=Number(editDuration.value),mastery=Number(editMastery.value);
+ if(!i||!editName.value.trim()||!Number.isInteger(target)||target<1||target>20||!Number.isInteger(prior)||prior<0||prior>100||!Number.isFinite(duration)||duration<10||duration>1440||!Number.isFinite(mastery)||mastery<0||mastery>100)return toast('Vérifiez les valeurs saisies.');
+ Object.assign(i,{active:editActive.value==='1',name:editName.value.trim(),block:editBlock.value.trim(),discipline:editDiscipline.value.trim(),target,priorDone:prior,duration,priority:Number(editPriority.value),mastery,notes:editNotes.value.trim()});state.unscheduled=[];state.planGenerated=false;save();itemDialog.close();toast('Avancement enregistré. Régénérez le planning.');
+}
+
+function renderAll(){renderItems();renderPlanning();renderDashboard();renderCheckpoints();renderCalendar()}
+loadSettingsUI();renderAll();
+</script>
+</body>
+</html>
