@@ -64,13 +64,21 @@ textarea{min-height:80px;resize:vertical}
 @media(max-width:1000px){.app{grid-template-columns:1fr}aside{height:auto;position:relative}.nav{display:flex;overflow:auto}.aside-foot{display:none}.stats,.two,.three{grid-template-columns:1fr 1fr}.day{min-height:90px}.item-row{grid-template-columns:1.4fr .7fr .7fr auto}.item-row .hide-sm{display:none}}
 @media(max-width:650px){main{padding:14px}.topbar{align-items:flex-start;flex-direction:column}.stats,.two,.three,.form-grid{grid-template-columns:1fr}.calendar{gap:3px}.calendar-head{gap:3px}.day{min-height:78px;padding:5px}.session{font-size:9px;padding:4px}.item-row{grid-template-columns:1fr auto}.item-row>*:not(:first-child):not(:last-child){display:none}}
 </style>
+<style>
+/* Hide the application before the first paint, including while assets load. */
+.app[hidden]{display:none!important}
+body.project-locked> :not(#projectLock):not(#quitOverlay):not(script):not(style){display:none!important}
+body.project-locked::before{display:none!important}
+body.project-locked{background:#f4f6fb!important;overflow:hidden}
+body.project-locked #projectLock{background:#f4f6fb;isolation:isolate}
+</style>
 </head>
 <body class="project-locked">
 <div id="quitOverlay" class="quit-overlay" hidden><div class="card"><h2 id="quitTitle">Sauvegarde avant fermeture</h2><p id="quitMessage" role="status" aria-live="polite">Enregistrement dans Firebase…</p><button id="quitReturn" class="btn primary" hidden onclick="quitOverlay.hidden=true">Rouvrir le carnet</button></div></div>
-<div id="projectLock" class="project-lock"><form class="card lock-card" onsubmit="event.preventDefault();unlockProject()"><h1>Bienvenue, Méloé</h1><p>Entre ton code à six chiffres pour ouvrir ton carnet.</p><label for="unlockCode">Code d’accès</label><input id="unlockCode" type="password" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="off" required><button class="btn primary" type="submit">Ouvrir mon carnet</button><p id="lockStatus" role="status" aria-live="polite"></p></form></div>
-<div class="app">
+<div id="projectLock" class="project-lock"><form class="card lock-card" onsubmit="event.preventDefault();unlockProject()"><h1>Connexion</h1><p>Saisis ton code à six chiffres.</p><label for="unlockCode">Code d’accès</label><input id="unlockCode" type="password" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="off" required autofocus><button class="btn primary" type="submit">Se connecter</button><p id="lockStatus" role="status" aria-live="polite"></p></form></div>
+<div class="app" id="appShell" hidden inert aria-hidden="true">
 <aside>
-  <div class="brand"><img id="profileAvatar" class="profile-avatar" width="52" height="52" alt="Avatar de Méloé"><span>Méloé<small>Mon carnet de révision · V18</small></span></div>
+  <div class="brand"><img id="profileAvatar" class="profile-avatar" width="52" height="52" alt="Avatar de Méloé"><span>Méloé<small>Mon carnet de révision · V19</small></span></div>
   <div class="nav">
     <button class="active" data-page="dashboard">Tableau de bord</button>
     <button data-page="programme">Programme & items</button>
@@ -81,7 +89,7 @@ textarea{min-height:80px;resize:vertical}
     <button data-page="etapes">Points d'étape</button>
     <button data-page="parametres">Paramètres</button>
   </div>
-  <div class="aside-foot">V18 · Sauvegarde locale et synchronisation Firebase après connexion.</div>
+  <div class="aside-foot">V19 · Sauvegarde locale et synchronisation Firebase après connexion.</div>
 </aside>
 
 <main>
@@ -767,10 +775,10 @@ async function unlockProject(){
  const code=unlockCode.value;
  if(!/^\d{6}$/.test(code)){lockStatus.textContent='Entre un code de six chiffres.';return}
  try{if(await digestProjectCode(code)!==projectCodeHash()){lockStatus.textContent='Code incorrect.';unlockCode.value='';return}
- projectUnlocked=true;unlockCode.value='';lockStatus.textContent='';projectLock.hidden=true;document.body.classList.remove('project-locked');cloudAfterUnlock();
+ projectUnlocked=true;appShell.hidden=false;appShell.inert=false;appShell.setAttribute('aria-hidden','false');unlockCode.value='';lockStatus.textContent='';projectLock.hidden=true;document.body.classList.remove('project-locked');cloudAfterUnlock();
  }catch(e){lockStatus.textContent='La vérification du code est indisponible dans ce navigateur.'}
 }
-function lockProject(){cloudPause();projectUnlocked=false;if(dayAgendaDialog.open)dayAgendaDialog.close();if(sessionDialog.open)sessionDialog.close();closeRestCalendar();projectLock.hidden=false;document.body.classList.add('project-locked');unlockCode.value='';lockStatus.textContent='';currentCode.value='';newCode.value='';confirmCode.value='';unlockCode.focus()}
+function lockProject(){cloudPause();projectUnlocked=false;appShell.hidden=true;appShell.inert=true;appShell.setAttribute('aria-hidden','true');if(dayAgendaDialog.open)dayAgendaDialog.close();if(sessionDialog.open)sessionDialog.close();closeRestCalendar();projectLock.hidden=false;document.body.classList.add('project-locked');unlockCode.value='';lockStatus.textContent='';currentCode.value='';newCode.value='';confirmCode.value='';unlockCode.focus()}
 async function changeProjectCode(){
  if(!projectUnlocked)return;
  const old=currentCode.value,next=newCode.value;
