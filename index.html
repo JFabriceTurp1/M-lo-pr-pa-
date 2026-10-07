@@ -68,7 +68,7 @@ textarea{min-height:80px;resize:vertical}
 <body>
 <div class="app">
 <aside>
-  <div class="brand">Méloé Médecine<small>PASS S1 · Calendrier libre · V3</small></div>
+  <div class="brand">Méloé Médecine<small>PASS S1 · Calendrier libre · V5</small></div>
   <div class="nav">
     <button class="active" data-page="dashboard">Tableau de bord</button>
     <button data-page="programme">Programme & items</button>
@@ -79,7 +79,7 @@ textarea{min-height:80px;resize:vertical}
     <button data-page="etapes">Points d'étape</button>
     <button data-page="parametres">Paramètres</button>
   </div>
-  <div class="aside-foot">V3 · Données enregistrées uniquement sur cet appareil.</div>
+  <div class="aside-foot">V5 · Données enregistrées uniquement sur cet appareil.</div>
 </aside>
 
 <main>
@@ -178,15 +178,16 @@ textarea{min-height:80px;resize:vertical}
 </section>
 
 <section id="parametres" class="section">
+  <div class="card" style="margin-bottom:16px"><h2 style="font-size:18px">Couleur dominante du site</h2><p class="mini">Choisis une couleur dans la palette. Le thème est appliqué immédiatement à toutes les pages et enregistré automatiquement. Les couleurs des UE, des notes faibles et des jours de repos gardent leur rôle de repère.</p><div id="themePalette" class="theme-palette" role="group" aria-label="Couleur dominante du site"></div><p id="themeChoice" class="mini" role="status"></p></div>
   <div class="card">
     <div class="section-title"><h2>Paramètres du rétro-planning</h2></div>
     <div class="form-grid">
-      <div><label>Date de début</label><input id="startDate" type="date"></div>
-      <div><label>Date butoir</label><input id="deadline" type="date"></div>
+      <div><label>Date de début</label><input id="startDate" type="date" onchange="renderOffCalendar()"></div>
+      <div><label>Date butoir</label><input id="deadline" type="date" onchange="renderOffCalendar()"></div>
       <div><label>Heures / jour du lundi au vendredi (provisoire : 2 h)</label><input id="weekdayHours" type="number" min="0" max="24" step="0.5"></div>
       <div><label>Heures du week-end au total (samedi + dimanche)</label><input id="weekendHours" type="number" min="0" max="48" step="0.5"></div>
       <div><label>Espacement minimum entre deux passages (jours)</label><input id="spacingDays" type="number" min="1" max="60"></div>
-      <div><label>Jours sans travail (une date par ligne)</label><textarea id="offDates" placeholder="2026-10-18"></textarea></div>
+      <div style="grid-column:1/-1" class="rest-calendar-panel"><label>Jours sans travail</label><p class="mini">Clique sur une date pour la marquer comme jour de repos. Clique à nouveau pour la réactiver. Les choix sont enregistrés immédiatement.</p><div class="section-title"><h3 id="offMonthLabel"></h3><div class="actions"><button class="btn" aria-label="Mois précédent des jours sans travail" onclick="changeOffMonth(-1)">←</button><button class="btn" onclick="offCalendarToday()">Aujourd’hui</button><button class="btn" aria-label="Mois suivant des jours sans travail" onclick="changeOffMonth(1)">→</button></div></div><div class="calendar-head rest-head"><div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div></div><div id="offCalendar" class="rest-grid"></div><div class="legend" style="margin-top:12px"><span class="ue-tag" style="background:#fff;color:#182033;border-color:#dfe6f1">Disponible</span><span class="ue-tag" style="background:#ffe6ec;color:#a12a50;border-color:#d74e77">Jour sans travail</span></div><p class="mini">Les dates hors période sont atténuées. Modifier le repos ne déplace pas les séances déjà placées : régénère les séances automatiques ou déplace les séances manuelles.</p><div id="offDateSummary"></div></div>
     </div>
     <p class="mini">Le budget du week-end est partagé à parts égales. Mettre 0 h pour désactiver une période. Les durées sont des estimations modifiables par item. Les objectifs des points d’étape servent au suivi ; ils ne contraignent pas le calcul du planning.</p><button class="btn good" style="margin-top:14px" onclick="saveSettings()">Enregistrer les paramètres</button>
   </div>
@@ -211,6 +212,34 @@ dialog{border:1px solid var(--line);border-radius:18px;width:min(620px,95vw);max
 <style>
 .legend{display:flex;gap:8px;flex-wrap:wrap}.ue-tag{border:1px solid;border-radius:999px;padding:5px 10px;font-size:12px;font-weight:700}.calendar-scroll{overflow-x:auto}.calendar,.calendar-head{min-width:560px}.day{min-height:128px}.day.selected{outline:2px solid var(--accent)}.day.today .num{background:#17213a;color:#fff}.day .num{border:0;border-radius:7px;padding:5px 8px;cursor:pointer}.session{display:block;width:100%;text-align:left;border:1px solid;font:inherit;font-size:11px;cursor:pointer;overflow-wrap:anywhere}.session.done{opacity:.7;text-decoration:line-through}.qcm-card,.reminder-card{border:1px solid var(--line);border-left:5px solid;border-radius:12px;padding:14px;margin:12px 0}.qcm-inputs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:12px 0}.qcm-inputs input{padding:9px 5px;min-width:0}.qcm-inputs label{font-size:11px}.qcm-low{border:2px solid #bc334e;background:#fff1f4}.agenda-row{border-left:5px solid;border-radius:9px;padding:12px;margin:10px 0;background:#fafcff}.agenda-row .actions{margin-top:9px}.warning-box{padding:12px;background:#fff3dc;color:#784e00;border-radius:9px;margin:12px 0}button:focus-visible{outline:3px solid #7a4ce0;outline-offset:2px}
 @media(max-width:650px){.calendar,.calendar-head{min-width:0}.day{padding:3px;min-height:90px}.day .num{padding:5px}.session{font-size:9px;padding:4px 2px}.qcm-inputs{gap:5px}.qcm-card,.reminder-card{padding:10px}.nav{padding-bottom:8px}.form-grid>div{min-width:0}}
+</style>
+<style>
+.rest-calendar-panel{border:1px solid var(--line);border-radius:14px;padding:16px}.rest-head{min-width:0}.rest-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px}.rest-day{min-height:65px;min-width:0;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);padding:8px;text-align:center}.rest-day strong{display:block}.rest-day small{display:block;font-size:10px;margin-top:4px}.rest-day.outside-month{opacity:.5}.rest-day.outside-period{background:#f1f3f7;color:#6f7b91}.rest-day.is-rest{background:#ffe6ec;color:#a12a50;border:2px solid #d74e77}.rest-day.is-today{box-shadow:inset 0 0 0 2px #3157d5}.rest-selected{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}.rest-selected .btn{font-size:12px}.rest-calendar-panel h3{margin:0}
+@media(max-width:650px){.rest-calendar-panel{padding:10px}.rest-grid{gap:4px}.rest-day{min-height:54px;padding:5px 2px}.rest-day small{font-size:9px}.rest-calendar-panel .section-title{align-items:flex-start;flex-direction:column}}
+</style>
+<style>
+body{background:linear-gradient(180deg,var(--theme-top,#eef3fb) 0,var(--theme-paper,#f8fafd) 38%,var(--bg) 100%)}
+aside,.toast{background:var(--theme-sidebar,#17213a)}
+.brand small,.aside-foot{color:var(--theme-light,#aeb8d0)}
+.nav button{color:var(--theme-light,#cdd5e6)}
+.nav button.active,.nav button:hover{background:var(--theme-nav,#263452);color:#fff}
+.card{border-color:var(--line)}
+.btn.primary,.btn.good{background:var(--accent);border-color:var(--accent);color:#fff}
+.badge.todo{background:var(--theme-soft,#edf1ff);color:var(--accent)}
+.bar span{background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.day{background:var(--theme-paper,#fafcff)}
+.day.today .num{background:var(--accent);color:#fff}
+.rest-day.is-today{box-shadow:inset 0 0 0 2px var(--accent)}
+.timeline:before{background:var(--line)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+dialog::backdrop{background:var(--theme-backdrop,#17213a99)}
+.theme-palette{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.theme-option{display:flex;align-items:center;gap:10px;min-height:48px;border:2px solid var(--line);background:#fff;color:var(--ink);border-radius:12px;padding:10px;text-align:left}
+.theme-option[aria-pressed="true"]{border-color:var(--accent);background:var(--theme-soft)}
+.theme-swatch{height:26px;width:26px;flex-shrink:0;border-radius:50%;border:1px solid #0002}
+.theme-check{margin-left:auto;color:var(--accent);font-weight:800}
+@media(max-width:1000px){.theme-palette{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:650px){.theme-palette{grid-template-columns:repeat(2,minmax(0,1fr))}.theme-option{font-size:13px;padding:8px;gap:8px}}
 </style>
 <dialog id="sessionDialog"><h2 id="sessionDialogTitle">Placer une séance</h2><input id="sessionEditId" type="hidden"><div class="form-grid">
 <div><label>Date</label><input id="sessionDate" type="date"></div><div><label>Heure (facultative)</label><input id="sessionTime" type="time"></div>
@@ -267,14 +296,14 @@ function renderItems(){
  itemsList.innerHTML=list.length?list.map(i=>`<div class="item-row"><div><strong>${esc(i.reference||i.id)} — ${esc(i.name)}</strong><div class="mini">${esc(i.block)} · ${esc(i.discipline)} · ${i.duration} min · maîtrise ${i.mastery||0}%${i.active===false?" · Non planifié":""}</div></div><div><span class="badge todo">${itemDoneCount(i.id)}/${i.target} passages</span></div><div class="bar"><span style="width:${Math.min(100,itemDoneCount(i.id)/i.target*100)}%"></span></div><button class="btn" onclick="editItem('${i.id}')">Régler</button></div>`).join(''):'<div class="empty">Aucun item trouvé.</div>';
 }
 function saveSettings(){
- const settings={startDate:startDate.value,deadline:deadline.value,weekdayHours:Number(weekdayHours.value),weekendHours:Number(weekendHours.value),spacingDays:Number(spacingDays.value),offDates:offDates.value.split(/\s+/).filter(Boolean)};
+ const settings={startDate:startDate.value,deadline:deadline.value,weekdayHours:Number(weekdayHours.value),weekendHours:Number(weekendHours.value),spacingDays:Number(spacingDays.value),offDates:[...(state.settings.offDates||[])]};
  if(!settings.startDate||!settings.deadline||settings.deadline<settings.startDate||!Number.isFinite(settings.weekdayHours)||settings.weekdayHours<0||settings.weekdayHours>24||!Number.isFinite(settings.weekendHours)||settings.weekendHours<0||settings.weekendHours>48||!Number.isInteger(settings.spacingDays)||settings.spacingDays<1||settings.spacingDays>60||settings.offDates.some(d=>!validDate(d))) {toast('Vérifiez les dates, les heures et les jours sans travail.');return false}
  state.settings={...state.settings,...settings};save();toast('Paramètres enregistrés. Régénérez pour les appliquer.');return true;
 }
 function loadSettingsUI(){
  startDate.value=state.settings.startDate;deadline.value=state.settings.deadline;
  weekdayHours.value=state.settings.weekdayHours??2;weekendHours.value=state.settings.weekendHours??15;
- spacingDays.value=state.settings.spacingDays??3;offDates.value=(state.settings.offDates||[]).join('\n');
+ spacingDays.value=state.settings.spacingDays??3;renderOffCalendar();
 }
 function generatePlan(){
  if(!saveSettings())return;
@@ -350,7 +379,7 @@ function renderCalendar(){
 function changeMonth(n){monthCursor.setMonth(monthCursor.getMonth()+n);renderCalendar()}
 function exportData(){
  const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}),a=document.createElement("a");
- a.href=URL.createObjectURL(blob);a.download="meloe_retroplanning_PASS_S1_V3.json";a.click();URL.revokeObjectURL(a.href)
+ a.href=URL.createObjectURL(blob);a.download="meloe_retroplanning_PASS_S1_V5.json";a.click();URL.revokeObjectURL(a.href)
 }
 importFile.onchange=async e=>{const f=e.target.files[0];if(!f)return;try{
  const incoming=JSON.parse(await f.text());validateImport(incoming);
@@ -377,7 +406,7 @@ function saveItemEdit(){
 
 const UE_COLORS={UE1A:{bg:'#e8efff',ink:'#2449a5',line:'#5179de'},UE1B:{bg:'#f0e6ff',ink:'#6732a0',line:'#9560c8'},UE1E:{bg:'#e1f4ed',ink:'#1f6850',line:'#3b997b'},UE1F:{bg:'#fff1d9',ink:'#84550b',line:'#cc922b'},UE1G:{bg:'#ffe6ec',ink:'#a12a50',line:'#d74e77'}};
 let selectedDate=todayISO();
-function normalizeState(){state.settings.nearDays??=30;for(const i of state.items){i.qcm??=[];while(i.qcm.length<5)i.qcm.push(null)}state.unscheduled??=[]}
+function normalizeState(){state.settings.themeColor=SITE_THEMES.some(t=>t.color===state.settings.themeColor)?state.settings.themeColor:SITE_THEMES[0].color;state.settings.nearDays??=30;for(const i of state.items){i.qcm??=[];while(i.qcm.length<5)i.qcm.push(null)}state.unscheduled??=[]}
 function allUEs(){return [...new Set([...Object.keys(UE_COLORS),...state.items.map(i=>i.block),...state.sessions.map(s=>s.block)].filter(Boolean))]}
 function fillUEFilters(){for(const id of ['qcmUE','reminderUE']){const e=document.getElementById(id),v=e.value;e.innerHTML='<option value="">Toutes les UE</option>'+allUEs().map(ue=>`<option value="${esc(ue)}">${esc(ue)}</option>`).join('');e.value=allUEs().includes(v)?v:''}}
 function ueColor(ue){if(UE_COLORS[ue])return UE_COLORS[ue];let hash=0;for(const c of String(ue||''))hash=(hash*31+c.charCodeAt(0))>>>0;const h=hash%360;return {bg:`hsl(${h} 65% 94%)`,ink:`hsl(${h} 60% 28%)`,line:`hsl(${h} 55% 47%)`}}
@@ -433,7 +462,31 @@ function renderReminders(){
  studyAdvice.innerHTML=`<p>Commence par les cours UE1B / UE1G encore sous trois passages et ceux ayant une note QCM inférieure à 10. Utilise « Placer une révision » pour choisir toi-même une journée.</p><p>Pour les QCM faibles, reprends les questions manquées et note ce qui t’a posé problème. Les notes sont conservées : une ancienne note &lt; 10 reste signalée même après une meilleure note.</p><p>Planifier une séance ne signifie pas avoir revu le cours : valide-la après le travail, ou renseigne tes passages antérieurs dans Programme &amp; items.</p>${late?`<div class="warning-box">${late} séance(s) non validée(s) sont datées avant aujourd’hui. Déplace-les dans Calendrier si elles n’ont pas été réalisées.</div>`:''}<p>Répartis les révisions sur plusieurs journées et conserve des pauses. Le calendrier signale les journées au-delà de ton budget ; tu gardes la main sur leur organisation.</p>`;
 }
 
-function renderAll(){renderItems();renderPlanning();renderDashboard();renderCheckpoints();renderCalendar();renderQcm();renderReminders()}
+
+let offMonthCursor=new Date();offMonthCursor.setDate(1);
+function renderOffCalendar(){
+ const y=offMonthCursor.getFullYear(),m=offMonthCursor.getMonth();offMonthLabel.textContent=offMonthCursor.toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
+ const start=new Date(y,m,1-((new Date(y,m,1).getDay()+6)%7)),off=new Set(state.settings.offDates||[]);let html='';
+ const begin=startDate.value||state.settings.startDate,end=deadline.value||state.settings.deadline;
+ for(let k=0;k<42;k++){const d=new Date(start);d.setDate(start.getDate()+k);const date=dateISO(d),rest=off.has(date),outside=!!(begin&&date<begin||end&&date>end),sessions=daySessions(date).length;
+ html+=`<button type="button" class="rest-day ${rest?'is-rest':''} ${date===todayISO()?'is-today':''} ${d.getMonth()!==m?'outside-month':''} ${outside?'outside-period':''}" aria-pressed="${rest}" aria-label="${fmt(date)} : ${rest?'jour sans travail':'disponible'}${sessions?', '+sessions+' séance(s) placée(s)':''}" onclick="toggleOffDate('${date}')"><strong>${d.getDate()}</strong><small>${rest?'Repos':sessions?sessions+' séance(s)':''}</small></button>`;
+ }offCalendar.innerHTML=html;
+ const selected=[...off].sort(),conflicts=selected.reduce((n,date)=>n+daySessions(date).length,0);
+ offDateSummary.innerHTML=`<p><strong>${selected.length} jour(s) sans travail sélectionné(s)</strong></p>${conflicts?`<div class="warning-box">${conflicts} séance(s) restent placées sur des jours de repos. Déplace-les dans Calendrier ou régénère les séances automatiques.</div>`:''}${selected.length?'<div class="rest-selected">'+selected.map(date=>`<button class="btn" onclick="toggleOffDate('${date}')" aria-label="Réactiver le ${fmt(date)}">${fmt(date)} ×</button>`).join('')+'</div>':''}`;
+}
+function toggleOffDate(date){if(!validDate(date))return;const dates=new Set(state.settings.offDates||[]),added=!dates.has(date);if(added)dates.add(date);else dates.delete(date);state.settings.offDates=[...dates].sort();state.unscheduled=[];state.planGenerated=false;save();toast(added?'Jour sans travail enregistré.':'Jour de travail réactivé.')}
+function changeOffMonth(n){offMonthCursor.setMonth(offMonthCursor.getMonth()+n);renderOffCalendar()}
+function offCalendarToday(){offMonthCursor=new Date();offMonthCursor.setDate(1);renderOffCalendar()}
+
+
+const SITE_THEMES=[{name:'Bleu',color:'#3157d5'},{name:'Violet',color:'#6942b8'},{name:'Rose',color:'#a83568'},{name:'Corail',color:'#b63343'},{name:'Orange',color:'#b35a14'},{name:'Doré',color:'#8b6a12'},{name:'Vert',color:'#257451'},{name:'Turquoise',color:'#117676'},{name:'Bleu océan',color:'#176b98'},{name:'Ardoise',color:'#48516b'}];
+function mixTheme(color,target,weight){const a=color.slice(1).match(/../g).map(h=>parseInt(h,16)),b=target.slice(1).match(/../g).map(h=>parseInt(h,16));return '#'+a.map((n,i)=>Math.round(n*(1-weight)+b[i]*weight).toString(16).padStart(2,'0')).join('')}
+function currentSiteTheme(){return SITE_THEMES.find(t=>t.color===state.settings.themeColor)||SITE_THEMES[0]}
+function applySiteTheme(){const theme=currentSiteTheme(),color=theme.color,vars={'--accent':color,'--accent2':mixTheme(color,'#ffffff',0.18),'--bg':mixTheme(color,'#ffffff',0.96),'--line':mixTheme(color,'#ffffff',0.84),'--theme-top':mixTheme(color,'#ffffff',0.92),'--theme-paper':mixTheme(color,'#ffffff',0.985),'--theme-soft':mixTheme(color,'#ffffff',0.91),'--theme-sidebar':mixTheme(color,'#000000',0.72),'--theme-nav':mixTheme(color,'#000000',0.42),'--theme-light':mixTheme(color,'#ffffff',0.8),'--theme-backdrop':mixTheme(color,'#000000',0.72)+'99','--shadow':'0 12px 28px '+mixTheme(color,'#000000',0.35)+'18'};for(const [key,value] of Object.entries(vars))document.documentElement.style.setProperty(key,value)}
+function renderThemePalette(){const current=currentSiteTheme();themePalette.innerHTML=SITE_THEMES.map(t=>`<button type="button" class="theme-option" aria-pressed="${t.color===current.color}" aria-label="Thème ${t.name}" onclick="chooseSiteTheme('${t.color}')"><span class="theme-swatch" style="background:${t.color}"></span><span>${t.name}</span>${t.color===current.color?'<span class="theme-check" aria-hidden="true">✓</span>':''}</button>`).join('');themeChoice.textContent='Couleur actuelle : '+current.name+'.'}
+function chooseSiteTheme(color){const theme=SITE_THEMES.find(t=>t.color===color);if(!theme)return;state.settings.themeColor=color;save();toast('Thème '+theme.name+' appliqué.')}
+
+function renderAll(){applySiteTheme();renderThemePalette();renderItems();renderPlanning();renderDashboard();renderCheckpoints();renderCalendar();renderQcm();renderReminders();renderOffCalendar()}
 normalizeState();fillUEFilters();loadSettingsUI();renderAll();
 setInterval(()=>{renderDashboard();renderReminders();},60000);
 </script>
