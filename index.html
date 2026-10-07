@@ -65,10 +65,11 @@ textarea{min-height:80px;resize:vertical}
 @media(max-width:650px){main{padding:14px}.topbar{align-items:flex-start;flex-direction:column}.stats,.two,.three,.form-grid{grid-template-columns:1fr}.calendar{gap:3px}.calendar-head{gap:3px}.day{min-height:78px;padding:5px}.session{font-size:9px;padding:4px}.item-row{grid-template-columns:1fr auto}.item-row>*:not(:first-child):not(:last-child){display:none}}
 </style>
 </head>
-<body>
+<body class="project-locked">
+<div id="projectLock" class="project-lock"><form class="card lock-card" onsubmit="event.preventDefault();unlockProject()"><h1>Bienvenue, Méloé</h1><p>Entre ton code à six chiffres pour ouvrir ton carnet.</p><label for="unlockCode">Code d’accès</label><input id="unlockCode" type="password" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="off" required><button class="btn primary" type="submit">Ouvrir mon carnet</button><p id="lockStatus" role="status" aria-live="polite"></p></form></div>
 <div class="app">
 <aside>
-  <div class="brand"><img id="profileAvatar" class="profile-avatar" width="52" height="52" alt="Avatar de Méloé"><span>Méloé<small>Mon carnet de révision · V12</small></span></div>
+  <div class="brand"><img id="profileAvatar" class="profile-avatar" width="52" height="52" alt="Avatar de Méloé"><span>Méloé<small>Mon carnet de révision · V15</small></span></div>
   <div class="nav">
     <button class="active" data-page="dashboard">Tableau de bord</button>
     <button data-page="programme">Programme & items</button>
@@ -148,21 +149,7 @@ textarea{min-height:80px;resize:vertical}
   </div>
 </section>
 
-<section id="calendrier" class="section">
-  <div class="card">
-    <div class="section-title">
-      <h2 id="monthLabel"></h2>
-      <div class="actions"><button class="btn" onclick="changeMonth(-1)">←</button><button class="btn" onclick="changeMonth(1)">→</button></div>
-    </div>
-    <p class="mini">Clique sur un jour pour organiser ta journée, ou sur une séance pour la déplacer ou la modifier. Les séances manuelles sont conservées lors d’une régénération automatique. Cocher « Réalisé » compte un passage pour le cours choisi.</p>
-    <div id="calendarLegend" class="legend"></div>
-    <div class="actions" style="margin:12px 0"><button class="btn primary" onclick="openSession('',selectedDate)">Ajouter une séance</button><button class="btn" onclick="calendarToday()">Aujourd’hui</button></div>
-    <div class="calendar-scroll"><div class="calendar-head"><div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div></div>
-    <div id="calendar" class="calendar"></div></div>
-    <div id="dayAgenda" style="margin-top:20px"></div>
-  </div>
-</section>
-
+<section id="calendrier" class="section"><div class="card screen-calendar-card"><div class="section-title"><h2 id="monthLabel"></h2><div class="actions"><button class="btn" aria-label="Mois précédent" onclick="changeMonth(-1)">←</button><button class="btn" onclick="calendarToday()">Aujourd’hui</button><button class="btn" aria-label="Mois suivant" onclick="changeMonth(1)">→</button><button class="btn" onclick="go('dashboard')">Fermer</button></div></div><div class="calendar-tools"><p class="mini">Clique sur une date pour voir toutes ses séances.</p><button class="btn primary" onclick="openSession('',selectedDate)">+ Séance</button></div><div id="calendarLegend" class="legend"></div><div class="calendar-scroll"><div class="calendar-head"><div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div></div><div id="calendar" class="calendar"></div></div></div></section>
 <section id="qcm" class="section"><div class="card"><h2>Mes notes aux QCM</h2><p class="mini">Notes sur 20. Cinq cases par cours, et possibilité d’en ajouter. Une case vide ne vaut pas zéro. Toute note conservée inférieure à 10 déclenche un rappel prioritaire.</p><div class="form-grid"><input id="qcmSearch" placeholder="Rechercher une matière ou un cours…" oninput="renderQcm()"><select id="qcmUE" onchange="renderQcm()"><option value="">Toutes les UE</option></select></div><div id="qcmList" style="margin-top:16px"></div></div></section>
 <section id="rappels" class="section"><div class="card"><h2>Rappels &amp; conseils</h2><div id="examCountdown"></div><p class="mini">Objectif de rappel : au moins trois passages réalisés par cours. UE1B et UE1G : priorité renforcée si cet objectif n’est pas atteint. Toute note QCM inférieure à 10/20 reste prioritaire tant qu’elle est conservée. Les cours désactivés sont exclus.</p><div class="form-grid"><div><label>Alerte « concours proche » à partir de (jours)</label><input id="nearDays" type="number" min="1" max="365" onchange="saveNearDays(this)"></div><div><label>Filtrer par UE</label><select id="reminderUE" onchange="renderReminders()"><option value="">Toutes les UE</option></select></div></div><h3>Rappels prioritaires</h3><div id="priorityReminders"></div><h3>Cours travaillés moins de trois fois</h3><div id="standardReminders"></div><h3>Conseils pour organiser tes révisions</h3><div id="studyAdvice"></div><p class="mini">Rappels affichés ici uniquement : aucune notification n’est envoyée lorsque le logiciel est fermé. Les échéances se mettent à jour à l’ouverture et tant que la page reste ouverte.</p></div></section>
 <section id="etapes" class="section">
@@ -181,6 +168,7 @@ textarea{min-height:80px;resize:vertical}
 </section>
 
 <section id="parametres" class="section">
+<div class="card" style="margin-bottom:16px"><h2>Code d’accès au logiciel</h2><p class="mini">Six chiffres. Le code est demandé à chaque ouverture. Ce réglage s’applique à ce navigateur ; la connexion Firebase reste à configurer.</p><form onsubmit="event.preventDefault();changeProjectCode()"><div class="form-grid"><div><label for="currentCode">Code actuel</label><input id="currentCode" type="password" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" autocomplete="off" required></div><div><label for="newCode">Nouveau code</label><input id="newCode" type="password" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" autocomplete="off" required></div><div><label for="confirmCode">Confirmer le nouveau code</label><input id="confirmCode" type="password" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" autocomplete="off" required></div></div><div class="actions" style="margin-top:14px"><button type="submit" class="btn primary">Changer le code</button><button type="button" class="btn" onclick="lockProject()">Verrouiller le carnet</button></div><p id="codeChangeStatus" role="status" aria-live="polite"></p></form></div>
   <div class="card avatar-settings" style="margin-bottom:16px"><h2>Ma photo de profil</h2><p class="mini">Choisis ton avatar : il s’affiche à côté de ton nom en haut à gauche. Tu peux aussi donner un nom à chacun des quatre avatars. Les noms et ton choix sont enregistrés automatiquement.</p><div id="avatarChoices" class="avatar-choices" role="group" aria-label="Choisir une photo de profil"></div><p id="avatarChoiceStatus" class="mini" role="status" aria-live="polite"></p></div>
   <div class="card" style="margin-bottom:16px"><h2 style="font-size:18px">Couleur dominante du site</h2><p class="mini">Choisis une nuance dans la mosaïque hexagonale, comme sur la palette de référence. Le thème est appliqué immédiatement à toutes les pages et enregistré automatiquement. Les couleurs des UE, des notes faibles et des jours de repos gardent leur rôle de repère.</p><div id="themePalette" class="hex-palette" role="group" aria-label="Couleur dominante du site"></div><p id="themeChoice" class="mini" role="status"></p></div>
   <div class="card">
@@ -191,7 +179,7 @@ textarea{min-height:80px;resize:vertical}
       <div><label>Heures / jour du lundi au vendredi (provisoire : 2 h)</label><input id="weekdayHours" type="number" min="0" max="24" step="0.5"></div>
       <div><label>Heures du week-end au total (samedi + dimanche)</label><input id="weekendHours" type="number" min="0" max="48" step="0.5"></div>
       <div><label>Espacement minimum entre deux passages (jours)</label><input id="spacingDays" type="number" min="1" max="60"></div>
-      <div style="grid-column:1/-1" class="rest-calendar-panel"><label>Jours sans travail</label><p class="mini">Clique sur une date pour la marquer comme jour de repos. Clique à nouveau pour la réactiver. Les choix sont enregistrés immédiatement.</p><div class="section-title"><h3 id="offMonthLabel"></h3><div class="actions"><button class="btn" aria-label="Mois précédent des jours sans travail" onclick="changeOffMonth(-1)">←</button><button class="btn" onclick="offCalendarToday()">Aujourd’hui</button><button class="btn" aria-label="Mois suivant des jours sans travail" onclick="changeOffMonth(1)">→</button></div></div><div class="calendar-head rest-head"><div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div></div><div id="offCalendar" class="rest-grid"></div><div class="legend" style="margin-top:12px"><span class="ue-tag" style="background:#fff;color:#182033;border-color:#dfe6f1">Disponible</span><span class="ue-tag" style="background:#ffe6ec;color:#a12a50;border-color:#d74e77">Jour sans travail</span></div><p class="mini">Les dates hors période sont atténuées. Modifier le repos ne déplace pas les séances déjà placées : régénère les séances automatiques ou déplace les séances manuelles.</p><div id="offDateSummary"></div></div>
+      <div style="grid-column:1/-1" class="rest-calendar-panel" id="restCalendarPanel"><label>Jours sans travail</label><div class="actions"><button class="btn primary" onclick="openRestCalendar()">Ouvrir l’agenda plein écran</button><button class="btn rest-close" onclick="closeRestCalendar()">Fermer</button></div><p class="mini">Clique sur une date pour la marquer comme jour de repos. Clique à nouveau pour la réactiver. Les choix sont enregistrés immédiatement.</p><div class="section-title"><h3 id="offMonthLabel"></h3><div class="actions"><button class="btn" aria-label="Mois précédent des jours sans travail" onclick="changeOffMonth(-1)">←</button><button class="btn" onclick="offCalendarToday()">Aujourd’hui</button><button class="btn" aria-label="Mois suivant des jours sans travail" onclick="changeOffMonth(1)">→</button></div></div><div class="calendar-head rest-head"><div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div></div><div id="offCalendar" class="rest-grid"></div><div class="legend" style="margin-top:12px"><span class="ue-tag" style="background:#fff;color:#182033;border-color:#dfe6f1">Disponible</span><span class="ue-tag" style="background:#ffe6ec;color:#a12a50;border-color:#d74e77">Jour sans travail</span></div><p class="mini">Les dates hors période sont atténuées. Modifier le repos ne déplace pas les séances déjà placées : régénère les séances automatiques ou déplace les séances manuelles.</p><div id="offDateSummary"></div></div>
     </div>
     <p class="mini">Le budget du week-end est partagé à parts égales. Mettre 0 h pour désactiver une période. Les durées sont des estimations modifiables par item. Les objectifs des points d’étape servent au suivi ; ils ne contraignent pas le calcul du planning.</p><button class="btn good" style="margin-top:14px" onclick="saveSettings()">Enregistrer les paramètres</button>
   </div>
@@ -348,6 +336,57 @@ label{font-size:15px}.mini{font-size:15px;line-height:1.7}
 .avatar-tile input{width:100%;min-width:0;font-size:15px;padding:10px;border-radius:13px}
 @media(max-width:650px){.avatar-tile{width:calc(50% - 5px);max-width:160px}.avatar-tile input{font-size:16px}}
 </style>
+<style>
+.project-lock{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;background:var(--bg,#f4f6ff);overflow:auto}
+.project-lock[hidden]{display:none}
+.lock-card{width:min(100%,440px);text-align:left}.lock-card h1{font-size:30px}.lock-card input{margin-bottom:18px;text-align:center;font-size:26px;letter-spacing:8px}.lock-card .btn{width:100%}
+body.project-locked{overflow:hidden}body.project-locked .app{display:none}
+#lockStatus,#codeChangeStatus{min-height:1.4em;color:var(--accent-ink,#3157d5)}
+@media print{body.project-locked .app{display:none!important}}
+</style>
+<style>
+/* Consistent readable text on every pastel theme, including secondary labels. */
+:root{--ink:#202638;--muted:#495268}
+.subtitle,.mini,.stat-label,.stat-hint,label,.programme-note,.empty,.table th,.milestone small,.signature-caption,.revision-hero p,.orbit-pill,.segmented button,.frise-date,.frise-note,.frise-day-total,.calendar-head,.calendar-more,.calendar-total,.calendar-rest,.rest-day.outside-period{color:var(--muted)}
+.nav button{color:var(--muted)!important}
+.nav button.active,.nav button:hover{color:var(--accent-ink)!important}
+.stat-label,label{font-weight:650}
+input::placeholder,textarea::placeholder{color:var(--muted);opacity:1}
+.badge.todo{color:var(--accent-ink)}
+.day .num{color:var(--ink)}
+.day.today .num,.day.selected .num{color:var(--accent-text)}
+.day.muted,.rest-day.outside-month{opacity:1}
+.day.muted{background:#f2f3f7}.day.muted .num{color:var(--muted)}
+.day.muted.today .num,.day.muted.selected .num{color:var(--accent-text)}
+.frise-session strong{color:var(--ink)}
+.frise-day.is-exam .frise-date{color:#8b2450}
+</style>
+<style>
+body.calendar-open{overflow:hidden}
+#calendrier.active{position:fixed;inset:0;z-index:100;display:block;padding:12px;background:var(--bg);height:100dvh;box-sizing:border-box}
+.screen-calendar-card{height:100%;min-height:0;display:flex;flex-direction:column;padding:18px!important;gap:8px;overflow:hidden}
+.screen-calendar-card>.section-title{margin:0;flex-wrap:nowrap}.screen-calendar-card h2{margin:0;font-size:25px}.screen-calendar-card .btn{min-height:36px;padding:7px 12px;font-size:14px}
+.calendar-tools{display:flex;align-items:center;justify-content:space-between;gap:8px}.calendar-tools p{margin:0;font-size:14px}
+.screen-calendar-card .legend{gap:4px;flex-wrap:wrap}.screen-calendar-card .legend .ue-tag{font-size:12px;padding:2px 6px}
+#calendrier .calendar-scroll{flex:1;min-height:0;min-width:0;overflow:visible;display:flex;flex-direction:column}
+#calendrier .calendar-head{flex:none;margin:0}#calendrier .calendar-head>div{padding:5px}
+#calendar{flex:1;min-height:0;grid-template-columns:repeat(7,minmax(0,1fr));grid-template-rows:repeat(6,minmax(0,1fr));overflow:hidden}
+#calendar .day{display:flex;flex-direction:column;align-items:stretch;min-height:0;min-width:0;padding:4px 6px;overflow:hidden;text-align:left;font-family:inherit;color:var(--ink);cursor:pointer}
+#calendar .num{flex:none;font-size:16px;width:28px;height:28px;margin:0 auto 2px}
+.month-markers{display:flex;justify-content:center;gap:4px}.month-markers>span{font-size:11px;line-height:1.2;margin:0}
+.month-units{display:flex;flex-wrap:wrap;align-content:start;justify-content:center;gap:3px;min-height:0;flex:1;padding-top:3px}
+.month-unit{font-size:11px;line-height:1.3;border:1px solid;border-radius:6px;padding:1px 4px;white-space:nowrap}
+#calendar .calendar-total{font-size:11px;line-height:1.2;text-align:center;margin:2px 0 0;flex:none}
+.screen-agenda{width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;border:0;border-radius:0;padding:24px;box-sizing:border-box;overflow:hidden;background:var(--bg)}
+.screen-agenda[open]{display:flex;flex-direction:column;gap:12px}.agenda-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px}.agenda-toolbar h2{margin:0;font-size:24px}
+#dayAgenda{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px}#dayAgenda .section-title{margin:0}#dayAgenda .mini{margin:0}
+.agenda-content{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}.agenda-content .agenda-row{width:min(100%,800px);max-height:100%;box-sizing:border-box}.agenda-content .agenda-row strong{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;line-height:1.5}.agenda-content .agenda-row p{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}.agenda-pagination{display:flex;align-items:center;justify-content:center;gap:18px}
+.rest-close{display:none}.rest-calendar-panel.rest-fullscreen{position:fixed;inset:0;z-index:110;background:var(--bg);border:0;border-radius:0;padding:18px;box-sizing:border-box;display:flex;flex-direction:column;height:100dvh;overflow:hidden;gap:8px}
+.rest-fullscreen .rest-close{display:block}.rest-fullscreen>p,.rest-fullscreen>.legend,.rest-fullscreen #offDateSummary{display:none}.rest-fullscreen>.section-title{margin:0}.rest-fullscreen .rest-grid{flex:1;min-height:0;grid-template-rows:repeat(6,minmax(0,1fr))}.rest-fullscreen .rest-day{min-height:0;padding:4px}.rest-fullscreen .rest-head{margin:0}
+@media(max-width:650px){#calendrier.active{padding:5px}.screen-calendar-card{padding:10px!important;gap:5px;border-radius:18px}.screen-calendar-card>.section-title{flex-wrap:wrap;gap:5px}.screen-calendar-card h2{font-size:20px}.screen-calendar-card .actions{gap:5px}.screen-calendar-card .btn{font-size:12px;padding:6px 9px;min-height:32px}.calendar-tools p{font-size:12px}.screen-calendar-card .legend .ue-tag{font-size:10px;padding:1px 3px}#calendar .day{padding:3px 1px}#calendar .num{font-size:14px;width:24px;height:24px}.month-unit{font-size:9px;padding:0 2px}.month-units{gap:2px}#calendar .calendar-total{font-size:9px}.month-markers>span{font-size:9px}.screen-agenda{padding:14px}.agenda-toolbar h2{font-size:20px}.agenda-content .agenda-row{padding:14px}.agenda-content .agenda-row strong{font-size:16px}.agenda-content .actions .btn{font-size:13px;padding:9px;min-height:40px}.rest-fullscreen{padding:12px!important}.rest-fullscreen h3{font-size:18px}.rest-fullscreen .btn{font-size:13px;min-height:34px;padding:7px 10px}}
+@media(max-height:500px){#calendar .day{position:relative}#calendar .month-units{position:absolute;right:3px;top:3px;width:12px;gap:2px;padding:0}#calendar .month-unit{width:4px;height:4px;padding:0;border:0;font-size:0;border-radius:50%}.calendar-tools,.screen-calendar-card .legend{display:none}.screen-calendar-card>.section-title{flex-wrap:nowrap}#calendar .num{height:20px;width:20px;font-size:12px}.month-unit{font-size:9px}#calendar .calendar-total{font-size:9px}.month-markers{display:none}.screen-agenda{padding:8px}.agenda-toolbar h2{font-size:18px}.screen-agenda .btn{min-height:30px;padding:5px 10px;font-size:12px}.agenda-content .agenda-row{padding:8px}.agenda-content .agenda-row strong{-webkit-line-clamp:2;font-size:14px}.agenda-content .agenda-row p{display:none}.screen-agenda .mini{font-size:12px}}
+</style>
+<dialog id="dayAgendaDialog" class="screen-agenda"><div class="agenda-toolbar"><h2 id="agendaTitle"></h2><button class="btn" onclick="dayAgendaDialog.close()">Fermer</button></div><div id="dayAgenda"></div></dialog>
 <dialog id="sessionDialog"><h2 id="sessionDialogTitle">Placer une séance</h2><input id="sessionEditId" type="hidden"><div class="form-grid">
 <div><label>Date</label><input id="sessionDate" type="date"></div><div><label>Heure (facultative)</label><input id="sessionTime" type="time"></div>
 <div><label>Unité d’enseignement</label><select id="sessionUE" onchange="fillSessionItems()"></select></div><div><label>Cours / matière</label><select id="sessionItem" onchange="sessionItemChanged()"></select></div>
@@ -372,7 +411,7 @@ function toast(t){const e=document.getElementById("toast");e.textContent=t;e.cla
 function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]))}
 function fmt(d){if(!d)return"—";return new Date(d+"T12:00:00").toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"})}
 function daysDiff(a,b){return Math.ceil((new Date(b+"T12:00:00")-new Date(a+"T12:00:00"))/86400000)}
-function go(id){
+function go(id){document.body.classList.toggle('calendar-open',id==='calendrier');
  document.querySelectorAll(".section").forEach(x=>x.classList.remove("active"));
  document.querySelectorAll(".nav button").forEach(x=>x.classList.toggle("active",x.dataset.page===id));
  document.getElementById(id).classList.add("active");
@@ -477,12 +516,13 @@ function renderCheckpoints(){
 }
 function renderCalendar(){
  const y=monthCursor.getFullYear(),m=monthCursor.getMonth();monthLabel.textContent=monthCursor.toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
- calendarLegend.innerHTML=allUEs().map(ue=>`<span class="ue-tag" style="${ueStyle(ue||'Sans UE')}"><span class="legend-dot" style="background:${ueColor(ue).line}"></span>${esc(ue||'Sans UE')}</span>`).join('');
- const first=new Date(y,m,1),offset=(first.getDay()+6)%7,start=new Date(y,m,1-offset);let html='';
- for(let k=0;k<42;k++){const d=new Date(start);d.setDate(start.getDate()+k);const iso=dateISO(d),ss=daySessions(iso),cps=state.checkpoints.filter(c=>c.date===iso),rest=(state.settings.offDates||[]).includes(iso),exam=iso===state.settings.deadline;
- html+=`<div class="day ${d.getMonth()!==m?'muted':''} ${iso===selectedDate?'selected':''} ${iso===todayISO()?'today':''} ${d.getDay()===0||d.getDay()===6?'weekend':''} ${rest?'off-day':''}"><button class="num" aria-label="Organiser le ${fmt(iso)}" aria-pressed="${iso===selectedDate}" onclick="selectDay('${iso}')">${d.getDate()}</button>${exam?'<div class="calendar-exam">Concours</div>':''}${rest?'<div class="calendar-rest">Repos</div>':''}${cps.map(c=>`<div class="session checkpoint">${esc(c.name)}</div>`).join('')}${ss.slice(0,3).map(s=>`<button class="session ${s.done?'done':''}" style="${ueStyle(sessionBlock(s))}" title="${esc(sessionName(s))}" onclick="openSession('${s.id}')">${courseIcon(state.items.find(i=>i.id===s.itemId),sessionBlock(s),true)}<span>${esc(s.time||'')} ${esc(state.items.find(i=>i.id===s.itemId)?.reference||sessionBlock(s))}</span>${s.manual?'<span class="manual-dot" title="Séance manuelle">•</span>':''}</button>`).join('')}${ss.length>3?`<button class="calendar-more" onclick="selectDay('${iso}')">+ ${ss.length-3} séances</button>`:''}<div class="calendar-total">${ss.length?Math.round(ss.reduce((n,s)=>n+sessionMinutes(s),0))+' min':''}</div></div>`;
+ calendarLegend.innerHTML=allUEs().map(ue=>`<span class="ue-tag" style="${ueStyle(ue)}"><span class="legend-dot" style="background:${ueColor(ue).line}"></span>${esc(ue)}</span>`).join('');
+ const start=new Date(y,m,1-((new Date(y,m,1).getDay()+6)%7));let html='';
+ for(let k=0;k<42;k++){const d=new Date(start);d.setDate(start.getDate()+k);const date=dateISO(d),ss=daySessions(date),units=[...new Set(ss.map(sessionBlock))],rest=(state.settings.offDates||[]).includes(date),exam=date===state.settings.deadline,cps=state.checkpoints.filter(c=>c.date===date);
+ html+=`<button type="button" class="day ${d.getMonth()!==m?'muted':''} ${date===selectedDate?'selected':''} ${date===todayISO()?'today':''} ${rest?'off-day':''}" onclick="selectDay('${date}')" aria-label="${fmt(date)} : ${ss.length} séance(s)${rest?', repos':''}${exam?', concours':''}"><span class="num">${d.getDate()}</span><span class="month-markers">${exam?'<span class="calendar-exam">Concours</span>':rest?'<span class="calendar-rest">Repos</span>':''}${cps.length?'<span class="calendar-rest">◆ Étape</span>':''}</span><span class="month-units">${units.map(ue=>`<span class="month-unit" style="${ueStyle(ue)}" title="${esc(ue)}">${esc(ue)}</span>`).join('')}</span><span class="calendar-total">${ss.length?ss.length+' séance'+(ss.length>1?'s':'')+' · '+ss.reduce((n,s)=>n+sessionMinutes(s),0)+' min':''}</span></button>`;
  }calendar.innerHTML=html;renderDayAgenda();
 }
+
 function changeMonth(n){monthCursor.setMonth(monthCursor.getMonth()+n);renderCalendar()}
 function exportData(){
  const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}),a=document.createElement("a");
@@ -523,10 +563,19 @@ function sessionName(s){return state.items.find(i=>i.id===s.itemId)?.name||s.lab
 function sessionMinutes(s){return s.duration||state.items.find(i=>i.id===s.itemId)?.duration||60}
 function daySessions(date){return state.sessions.filter(s=>s.date===date).sort((a,b)=>(a.time||'99:99').localeCompare(b.time||'99:99')||sessionBlock(a).localeCompare(sessionBlock(b)))}
 function dayBudget(date){if((state.settings.offDates||[]).includes(date))return 0;const wd=new Date(date+'T12:00:00').getDay();return Math.round((wd===0||wd===6?state.settings.weekendHours/2:state.settings.weekdayHours)*60)}
-function selectDay(date){selectedDate=date;renderCalendar();dayAgenda.scrollIntoView({behavior:'smooth',block:'nearest'})}
+function selectDay(date){selectedDate=date;agendaPage=0;renderCalendar();if(!dayAgendaDialog.open)dayAgendaDialog.showModal()}
 function calendarToday(){selectedDate=todayISO();monthCursor=new Date(selectedDate+'T12:00:00');monthCursor.setDate(1);renderCalendar()}
 function sessionRow(s){return `<div class="agenda-row" style="border-color:${ueColor(sessionBlock(s)).line}"><span class="ue-tag" style="${ueStyle(sessionBlock(s))}">${esc(sessionBlock(s))}</span><strong> ${courseIcon(state.items.find(i=>i.id===s.itemId),sessionBlock(s))} ${esc(s.time||'Sans heure')} · ${esc(sessionName(s))}</strong><div class="mini" style="margin-top:7px">${sessionMinutes(s)} min · ${s.itemId?'Passage '+s.pass:'Travail global UE'} · ${s.manual?'Manuel, protégé':'Automatique'} · ${s.done?'Réalisé':'À travailler'}</div>${s.notes?`<p class="mini">${esc(s.notes)}</p>`:''}<div class="actions"><button class="btn" onclick="openSession('${s.id}')">Modifier / déplacer</button><button class="btn ${s.done?'':'good'}" onclick="toggleSession('${s.id}')">${s.done?'Annuler la validation':'Marquer réalisé'}</button></div></div>`}
-function renderDayAgenda(){const ss=daySessions(selectedDate),total=ss.reduce((n,s)=>n+sessionMinutes(s),0),budget=dayBudget(selectedDate);dayAgenda.innerHTML=`<div class="section-title"><h2>Ma journée du ${fmt(selectedDate)}</h2><button class="btn primary" onclick="openSession('',selectedDate)">Ajouter</button></div><p class="mini">${total} min prévues / ${budget} min disponibles.</p>${total>budget?'<div class="warning-box">Cette journée dépasse ton budget de travail. Tu peux déplacer une séance ou ajuster tes disponibilités.</div>':''}${ss.length?ss.map(sessionRow).join(''):'<div class="empty">Journée libre. Place ici les matières de ton choix.</div>'}`}
+let agendaPage=0;
+function turnAgenda(n){agendaPage+=n;renderDayAgenda()}
+function renderDayAgenda(){
+ const ss=daySessions(selectedDate),total=ss.reduce((n,s)=>n+sessionMinutes(s),0),budget=dayBudget(selectedDate);agendaPage=Math.max(0,Math.min(agendaPage,Math.max(0,ss.length-1)));
+ agendaTitle.textContent='Ma journée du '+fmt(selectedDate);
+ dayAgenda.innerHTML=`<div class="section-title"><p class="mini">${total} min / ${budget} min disponibles${total>budget?' · Budget dépassé':''}</p><button class="btn primary" onclick="openSession('',selectedDate)">+ Séance</button></div><div class="agenda-content">${ss.length?sessionRow(ss[agendaPage]):'<div class="empty">Journée libre. Ajoute les matières de ton choix.</div>'}</div>${ss.length?`<div class="agenda-pagination"><button class="btn" ${agendaPage===0?'disabled':''} onclick="turnAgenda(-1)">←</button><strong>Séance ${agendaPage+1} / ${ss.length}</strong><button class="btn" ${agendaPage>=ss.length-1?'disabled':''} onclick="turnAgenda(1)">→</button></div>`:''}`;
+}
+function openRestCalendar(){restCalendarPanel.classList.add('rest-fullscreen');renderOffCalendar()}
+function closeRestCalendar(){restCalendarPanel.classList.remove('rest-fullscreen')}
+
 function fillSessionItems(chosen=''){sessionItem.innerHTML='<option value="">Travail global sur cette UE</option>'+state.items.filter(i=>i.block===sessionUE.value).map(i=>`<option value="${i.id}">${esc(i.reference||'')} — ${esc(i.name)}${i.active===false?' (désactivé)':''}</option>`).join('');sessionItem.value=chosen}
 function sessionItemChanged(){const i=state.items.find(i=>i.id===sessionItem.value);if(i)sessionDuration.value=i.duration}
 function openSession(id='',date=selectedDate,itemId=''){
@@ -590,7 +639,7 @@ const SITE_THEMES=[{name:'Bleu',color:'#3157d5'},{name:'Violet',color:'#6942b8'}
 function mixTheme(color,target,weight){const a=color.slice(1).match(/../g).map(h=>parseInt(h,16)),b=target.slice(1).match(/../g).map(h=>parseInt(h,16));return '#'+a.map((n,i)=>Math.round(n*(1-weight)+b[i]*weight).toString(16).padStart(2,'0')).join('')}
 function currentSiteTheme(){const color=/^#[0-9a-f]{6}$/i.test(state.settings.themeColor||'')?state.settings.themeColor.toLowerCase():SITE_THEMES[0].color;return SITE_THEMES.find(t=>t.color===color)||{name:color.toUpperCase(),color}}
 function applySiteTheme(){
- const color=currentSiteTheme().color,ink=readableThemeInk(color),nav=mixTheme(color,'#000000',0.42),vars={'--accent':color,'--accent-text':themeContrastText(color),'--accent-ink':ink,'--accent2':mixTheme(color,themeLuminance(color)>0.6?'#000000':'#ffffff',0.18),'--bg':mixTheme(color,'#ffffff',0.96),'--line':mixTheme(ink,'#ffffff',0.84),'--theme-top':mixTheme(color,'#ffffff',0.92),'--theme-paper':mixTheme(color,'#ffffff',0.985),'--theme-soft':mixTheme(color,'#ffffff',0.91),'--theme-sidebar':mixTheme(color,'#000000',0.72),'--theme-nav':nav,'--theme-nav-text':themeContrastText(nav),'--theme-light':mixTheme(color,'#ffffff',0.8),'--theme-backdrop':mixTheme(color,'#000000',0.72)+'99','--shadow':'0 12px 28px '+mixTheme(color,'#000000',0.35)+'18'};
+ const color=currentSiteTheme().color,ink=readableThemeInk(color),nav=mixTheme(color,'#000000',0.42),vars={'--ink':'#202638','--muted':'#495268','--accent':color,'--accent-text':themeContrastText(color),'--accent-ink':ink,'--accent2':mixTheme(color,themeLuminance(color)>0.6?'#000000':'#ffffff',0.18),'--bg':mixTheme(color,'#ffffff',0.96),'--line':mixTheme(ink,'#ffffff',0.84),'--theme-top':mixTheme(color,'#ffffff',0.92),'--theme-paper':mixTheme(color,'#ffffff',0.985),'--theme-soft':mixTheme(color,'#ffffff',0.91),'--theme-sidebar':mixTheme(color,'#000000',0.72),'--theme-nav':nav,'--theme-nav-text':themeContrastText(nav),'--theme-light':mixTheme(color,'#ffffff',0.8),'--theme-backdrop':mixTheme(color,'#000000',0.72)+'99','--shadow':'0 12px 28px '+mixTheme(color,'#000000',0.35)+'18'};
  for(const [key,value] of Object.entries(vars))document.documentElement.style.setProperty(key,value);
 }
 function renderThemePalette(){
@@ -611,7 +660,7 @@ function chooseSiteTheme(color){if(!/^#[0-9a-f]{6}$/i.test(color))return;state.s
 function hslPaletteHex(h,s,l){const a=s*Math.min(l,1-l),f=n=>{const k=(n+h/30)%12;return l-a*Math.max(-1,Math.min(k-3,9-k,1))};return '#'+[f(0),f(8),f(4)].map(v=>Math.round(v*255).toString(16).padStart(2,'0')).join('')}
 function themeLuminance(color){const c=color.slice(1).match(/../g).map(v=>parseInt(v,16)/255).map(v=>v<=0.04045?v/12.92:((v+0.055)/1.055)**2.4);return c[0]*0.2126+c[1]*0.7152+c[2]*0.0722}
 function themeContrastText(color){const l=themeLuminance(color);if((l+0.05)/(themeLuminance('#182033')+0.05)>=4.5)return '#182033';if(1.05/(l+0.05)>=4.5)return '#ffffff';return '#000000'}
-function readableThemeInk(color){let ink=color;for(let n=0;n<20&&themeLuminance(ink)>0.16;n++)ink=mixTheme(ink,'#000000',0.1);return ink}
+function readableThemeInk(color){let ink=color;for(let n=0;n<20&&themeLuminance(ink)>0.09;n++)ink=mixTheme(ink,'#000000',0.1);return ink}
 // Original vector drawings authored for this application. No external assets.
 const MEDICAL_ICONS={
  anatomy:{label:'Anatomie / silhouette',shape:'<circle cx="16" cy="5" r="3"/><path d="M11 12h10l2 8-4 1v8m-6 0v-8l-4-1 2-8zm2 9h6M11 13l-5 7m15-7 5 7"/>'},
@@ -663,7 +712,7 @@ function plusDays(date,n){const d=new Date(date+'T12:00:00');d.setDate(d.getDate
 function setPlanningView(view){planningView=view;timelinePane.hidden=view!=='timeline';planningList.hidden=view!=='list';friseViewButton.classList.toggle('is-active',view==='timeline');listViewButton.classList.toggle('is-active',view==='list');friseViewButton.setAttribute('aria-pressed',String(view==='timeline'));listViewButton.setAttribute('aria-pressed',String(view==='list'));if(view==='timeline')renderFrise()}
 function moveFrise(direction){if(friseWindow.value==='all')friseWindow.value='14';friseStart=plusDays(friseStart,direction*(Number(friseWindow.value)||14));renderFrise();friseScroller.scrollLeft=0}
 function friseToday(){friseStart=todayISO();friseWindow.value='14';renderFrise();friseScroller.scrollLeft=0}
-function friseOpenDay(date){selectedDate=date;monthCursor=new Date(date+'T12:00:00');monthCursor.setDate(1);go('calendrier');renderCalendar();dayAgenda.scrollIntoView({behavior:'smooth',block:'nearest'})}
+function friseOpenDay(date){selectedDate=date;monthCursor=new Date(date+'T12:00:00');monthCursor.setDate(1);go('calendrier');selectDay(date)}
 function renderFrise(){
  const periodStart=state.settings.startDate||todayISO(),periodEnd=state.settings.deadline||plusDays(periodStart,30),mode=friseWindow.value||'14',span=Number(mode)||14;
  let start=mode==='all'?periodStart:friseStart;if(start<periodStart)start=periodStart;if(start>periodEnd)start=periodEnd;friseStart=start;
@@ -701,6 +750,30 @@ function renameProfileAvatar(id,value){
  renderProfileAvatar(false);
 }
 function chooseProfileAvatar(id){if(!PROFILE_AVATARS.some(a=>a.id===id))return;state.settings.avatarId=id;save();toast('Photo de profil enregistrée.')}
+
+
+const PROJECT_CODE_KEY='meloe_project_access_v1';
+const INITIAL_CODE_HASH='c3db585369971a4f9c9b7064408c9f163291d4d125532b2bf86993bfae274b2d';
+let projectUnlocked=false;
+function projectCodeHash(){try{return localStorage.getItem(PROJECT_CODE_KEY)||INITIAL_CODE_HASH}catch(e){return INITIAL_CODE_HASH}}
+async function digestProjectCode(code){const bytes=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(code));return Array.from(new Uint8Array(bytes),b=>b.toString(16).padStart(2,'0')).join('')}
+async function unlockProject(){
+ const code=unlockCode.value;
+ if(!/^\d{6}$/.test(code)){lockStatus.textContent='Entre un code de six chiffres.';return}
+ try{if(await digestProjectCode(code)!==projectCodeHash()){lockStatus.textContent='Code incorrect.';unlockCode.value='';return}
+ projectUnlocked=true;unlockCode.value='';lockStatus.textContent='';projectLock.hidden=true;document.body.classList.remove('project-locked');
+ }catch(e){lockStatus.textContent='La vérification du code est indisponible dans ce navigateur.'}
+}
+function lockProject(){projectUnlocked=false;if(dayAgendaDialog.open)dayAgendaDialog.close();if(sessionDialog.open)sessionDialog.close();closeRestCalendar();projectLock.hidden=false;document.body.classList.add('project-locked');unlockCode.value='';lockStatus.textContent='';currentCode.value='';newCode.value='';confirmCode.value='';unlockCode.focus()}
+async function changeProjectCode(){
+ if(!projectUnlocked)return;
+ const old=currentCode.value,next=newCode.value;
+ if(!/^\d{6}$/.test(old)||!/^\d{6}$/.test(next)){codeChangeStatus.textContent='Les codes doivent contenir exactement six chiffres.';return}
+ if(next!==confirmCode.value){codeChangeStatus.textContent='Les deux nouveaux codes sont différents.';return}
+ try{if(await digestProjectCode(old)!==projectCodeHash()){codeChangeStatus.textContent='Le code actuel est incorrect.';return}
+ localStorage.setItem(PROJECT_CODE_KEY,await digestProjectCode(next));currentCode.value='';newCode.value='';confirmCode.value='';codeChangeStatus.textContent='Nouveau code enregistré dans ce navigateur.';
+ }catch(e){codeChangeStatus.textContent='Le changement de code n’a pas pu être enregistré.'}
+}
 
 function renderAll(){renderProfileAvatar();applySiteTheme();renderThemePalette();renderItems();renderPlanning();renderDashboard();renderCheckpoints();renderCalendar();renderQcm();renderReminders();renderOffCalendar()}
 normalizeState();fillUEFilters();loadSettingsUI();renderAll();decorateNavigation();
