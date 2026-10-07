@@ -66,10 +66,11 @@ textarea{min-height:80px;resize:vertical}
 </style>
 </head>
 <body class="project-locked">
+<div id="quitOverlay" class="quit-overlay" hidden><div class="card"><h2 id="quitTitle">Sauvegarde avant fermeture</h2><p id="quitMessage" role="status" aria-live="polite">Enregistrement dans Firebase…</p><button id="quitReturn" class="btn primary" hidden onclick="quitOverlay.hidden=true">Rouvrir le carnet</button></div></div>
 <div id="projectLock" class="project-lock"><form class="card lock-card" onsubmit="event.preventDefault();unlockProject()"><h1>Bienvenue, Méloé</h1><p>Entre ton code à six chiffres pour ouvrir ton carnet.</p><label for="unlockCode">Code d’accès</label><input id="unlockCode" type="password" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="off" required><button class="btn primary" type="submit">Ouvrir mon carnet</button><p id="lockStatus" role="status" aria-live="polite"></p></form></div>
 <div class="app">
 <aside>
-  <div class="brand"><img id="profileAvatar" class="profile-avatar" width="52" height="52" alt="Avatar de Méloé"><span>Méloé<small>Mon carnet de révision · V16</small></span></div>
+  <div class="brand"><img id="profileAvatar" class="profile-avatar" width="52" height="52" alt="Avatar de Méloé"><span>Méloé<small>Mon carnet de révision · V18</small></span></div>
   <div class="nav">
     <button class="active" data-page="dashboard">Tableau de bord</button>
     <button data-page="programme">Programme & items</button>
@@ -80,7 +81,7 @@ textarea{min-height:80px;resize:vertical}
     <button data-page="etapes">Points d'étape</button>
     <button data-page="parametres">Paramètres</button>
   </div>
-  <div class="aside-foot">V10 · Données enregistrées uniquement sur cet appareil.</div>
+  <div class="aside-foot">V18 · Sauvegarde locale et synchronisation Firebase après connexion.</div>
 </aside>
 
 <main>
@@ -88,6 +89,7 @@ textarea{min-height:80px;resize:vertical}
 <div class="topbar">
   <div><h1 id="pageTitle">Mon espace</h1><div class="subtitle" id="pageSubtitle">Tes cours, tes journées, tes progrès.</div></div>
   <div class="actions">
+    <button id="quitButton" class="btn danger" onclick="quitProject()">Quitter</button>
     <button class="btn" title="Exporter une sauvegarde JSON" onclick="exportData()">Sauvegarder</button>
     <label class="btn" style="cursor:pointer" title="Importer une sauvegarde JSON">Restaurer<input id="importFile" type="file" accept=".json" hidden></label>
     <button class="btn primary" onclick="generatePlan()">Organiser mes révisions</button>
@@ -150,7 +152,7 @@ textarea{min-height:80px;resize:vertical}
   </div>
 </section>
 
-<section id="calendrier" class="section"><div class="card screen-calendar-card"><div class="section-title"><h2 id="monthLabel"></h2><div class="actions"><button class="btn" aria-label="Mois précédent" onclick="changeMonth(-1)">←</button><button class="btn" onclick="calendarToday()">Aujourd’hui</button><button class="btn" aria-label="Mois suivant" onclick="changeMonth(1)">→</button><button class="btn" onclick="go('dashboard')">Fermer</button></div></div><div class="calendar-tools"><p class="mini">Clique sur une date pour voir toutes ses séances.</p><button class="btn primary" onclick="openSession('',selectedDate)">+ Séance</button></div><div id="calendarLegend" class="legend"></div><div class="calendar-scroll"><div class="calendar-head"><div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div></div><div id="calendar" class="calendar"></div></div></div></section>
+<section id="calendrier" class="section"><div class="card screen-calendar-card"><div class="section-title"><h2 id="monthLabel"></h2><div class="actions"><button class="btn" aria-label="Mois précédent" onclick="changeMonth(-1)">←</button><button class="btn" onclick="calendarToday()">Aujourd’hui</button><button class="btn" aria-label="Mois suivant" onclick="changeMonth(1)">→</button><button class="btn" onclick="go('dashboard')">Fermer</button><button class="btn danger" onclick="quitProject()">Quitter</button></div></div><div class="calendar-tools"><p class="mini">Clique sur une date pour voir toutes ses séances.</p><button class="btn primary" onclick="openSession('',selectedDate)">+ Séance</button></div><div id="calendarLegend" class="legend"></div><div class="calendar-scroll"><div class="calendar-head"><div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div></div><div id="calendar" class="calendar"></div></div></div></section>
 <section id="qcm" class="section"><div class="card"><h2>Mes notes aux QCM</h2><p class="mini">Notes sur 20. Cinq cases par cours, et possibilité d’en ajouter. Une case vide ne vaut pas zéro. Toute note conservée inférieure à 10 déclenche un rappel prioritaire.</p><div class="form-grid"><input id="qcmSearch" placeholder="Rechercher une matière ou un cours…" oninput="renderQcm()"><select id="qcmUE" onchange="renderQcm()"><option value="">Toutes les UE</option></select></div><div id="qcmList" style="margin-top:16px"></div></div></section>
 <section id="rappels" class="section"><div class="card"><h2>Rappels &amp; conseils</h2><div id="examCountdown"></div><p class="mini">Objectif de rappel : au moins trois passages réalisés par cours. UE1B et UE1G : priorité renforcée si cet objectif n’est pas atteint. Toute note QCM inférieure à 10/20 reste prioritaire tant qu’elle est conservée. Les cours désactivés sont exclus.</p><div class="form-grid"><div><label>Alerte « concours proche » à partir de (jours)</label><input id="nearDays" type="number" min="1" max="365" onchange="saveNearDays(this)"></div><div><label>Filtrer par UE</label><select id="reminderUE" onchange="renderReminders()"><option value="">Toutes les UE</option></select></div></div><h3>Rappels prioritaires</h3><div id="priorityReminders"></div><h3>Cours travaillés moins de trois fois</h3><div id="standardReminders"></div><h3>Conseils pour organiser tes révisions</h3><div id="studyAdvice"></div><p class="mini">Rappels affichés ici uniquement : aucune notification n’est envoyée lorsque le logiciel est fermé. Les échéances se mettent à jour à l’ouverture et tant que la page reste ouverte.</p></div></section>
 <section id="etapes" class="section">
@@ -168,7 +170,7 @@ textarea{min-height:80px;resize:vertical}
   </div>
 </section>
 
-<section id="parametres" class="section"><div class="card cloud-panel" style="margin-bottom:16px"><h2>Synchronisation Firebase</h2><p class="mini">Projet : prepa-meloe · ton carnet partagé entre tes appareils.</p><p id="cloudStatusText" role="status" aria-live="polite">Firebase configuré · connexion Google requise.</p><p id="cloudAccount" class="mini">Aucun compte connecté</p><div class="actions"><button class="btn primary" onclick="cloudConnect()">Connexion Google</button><button class="btn" onclick="cloudSyncNow()">Synchroniser</button><button class="btn" onclick="cloudDisconnect()">Déconnecter</button><button id="cloudInitialise" hidden class="btn good" onclick="cloudCreate()">Créer le carnet en ligne</button></div><div id="cloudConflictPanel" hidden class="warning-box"><p>Les données locales sont conservées. Sauvegarde-les en JSON avant de choisir.</p><div class="actions"><button class="btn" onclick="cloudUseRemote()">Utiliser la version en ligne</button><button class="btn" onclick="cloudUseLocal()">Publier la version locale</button></div></div><div id="cloudEmailPanel" hidden style="margin-top:16px"><label for="cloudShareEmail">Compte Google de Méloé à autoriser</label><input id="cloudShareEmail" type="email" autocomplete="off" placeholder="Adresse Google de Méloé"><button class="btn" style="margin-top:10px" onclick="cloudShare()">Enregistrer l’accès de Méloé</button></div><details style="margin-top:18px"><summary>Première configuration Firebase</summary><ol><li>Dans le projet prepa-meloe, ouvre Authentication → Mode de connexion et active Google (choisis une adresse d’assistance).</li><li>Dans Authentication → Paramètres → Domaines autorisés, ajoute le domaine qui héberge ce logiciel, par exemple ton nom.github.io. Utilise l’adresse web du logiciel pour te connecter.</li><li>Ouvre Firestore Database, crée une base si nécessaire, puis onglet Règles. Copie les règles ci-dessous et clique sur Publier. Elles concernent uniquement ce projet Méloé.</li><li>Connecte-toi avec jfabriceturpin@gmail.com, puis clique sur Créer le carnet en ligne. Les données de cet appareil seront utilisées.</li><li>Entre le compte Google de Méloé dans le champ ci-dessus et enregistre son accès. Elle pourra ensuite se connecter sur ses appareils.</li></ol><button class="btn" onclick="cloudCopyRules()">Copier les règles Firestore</button><pre id="cloudRules" class="cloud-rules"></pre><p class="mini">Le code à six chiffres verrouille l’interface. Le compte Google et les règles Firestore contrôlent l’accès aux données. Sans connexion, tu peux continuer localement. Une version concurrente est signalée avant remplacement.</p></details></div>
+<section id="parametres" class="section"><div class="card cloud-panel" style="margin-bottom:16px"><h2>Synchronisation Firebase</h2><p class="mini">Projet : prepa-meloe · ton carnet partagé entre tes appareils.</p><p id="cloudStatusText" role="status" aria-live="polite">Firebase configuré · connexion Google requise.</p><p id="cloudAccount" class="mini">Aucun compte connecté</p><div class="actions"><button class="btn primary" onclick="cloudConnect()">Connexion Google</button><button class="btn" onclick="cloudSyncNow()">Synchroniser</button><button class="btn" onclick="cloudDisconnect()">Déconnecter</button><button id="cloudInitialise" hidden class="btn good" onclick="cloudCreate()">Créer le carnet en ligne</button></div><div id="cloudConflictPanel" hidden class="warning-box"><p>Les données locales sont conservées. Sauvegarde-les en JSON avant de choisir.</p><div class="actions"><button class="btn" onclick="cloudUseRemote()">Utiliser la version en ligne</button><button class="btn" onclick="cloudUseLocal()">Publier la version locale</button></div></div><div id="cloudEmailPanel" hidden style="margin-top:16px"><div id="cloudAccessStatus" class="cloud-access-status" role="status" aria-live="polite">Accès de Méloé : vérification en attente.</div><label for="cloudShareEmail">Compte Google de Méloé à autoriser</label><input id="cloudShareEmail" type="email" autocomplete="off" placeholder="Adresse Google de Méloé"><button class="btn" style="margin-top:10px" onclick="cloudShare()">Enregistrer l’accès de Méloé</button></div><details style="margin-top:18px"><summary>Première configuration Firebase</summary><ol><li>Dans le projet prepa-meloe, ouvre Authentication → Mode de connexion et active Google (choisis une adresse d’assistance).</li><li>Dans Authentication → Paramètres → Domaines autorisés, ajoute le domaine qui héberge ce logiciel, par exemple ton nom.github.io. Utilise l’adresse web du logiciel pour te connecter.</li><li>Ouvre Firestore Database, crée une base si nécessaire, puis onglet Règles. Copie les règles ci-dessous et clique sur Publier. Elles concernent uniquement ce projet Méloé.</li><li>Connecte-toi avec jfabriceturpin@gmail.com, puis clique sur Créer le carnet en ligne. Les données de cet appareil seront utilisées.</li><li>Entre le compte Google de Méloé dans le champ ci-dessus et enregistre son accès. Elle pourra ensuite se connecter sur ses appareils.</li></ol><button class="btn" onclick="cloudCopyRules()">Copier les règles Firestore</button><pre id="cloudRules" class="cloud-rules"></pre><p class="mini">Le code à six chiffres verrouille l’interface. Le compte Google et les règles Firestore contrôlent l’accès aux données. Sans connexion, tu peux continuer localement. Une version concurrente est signalée avant remplacement.</p></details></div>
 <div class="card" style="margin-bottom:16px"><h2>Code d’accès au logiciel</h2><p class="mini">Six chiffres. Le code est demandé à chaque ouverture. Le code est synchronisé avec le carnet lorsque Firebase est connecté.</p><form onsubmit="event.preventDefault();changeProjectCode()"><div class="form-grid"><div><label for="currentCode">Code actuel</label><input id="currentCode" type="password" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" autocomplete="off" required></div><div><label for="newCode">Nouveau code</label><input id="newCode" type="password" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" autocomplete="off" required></div><div><label for="confirmCode">Confirmer le nouveau code</label><input id="confirmCode" type="password" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" autocomplete="off" required></div></div><div class="actions" style="margin-top:14px"><button type="submit" class="btn primary">Changer le code</button><button type="button" class="btn" onclick="lockProject()">Verrouiller le carnet</button></div><p id="codeChangeStatus" role="status" aria-live="polite"></p></form></div>
   <div class="card avatar-settings" style="margin-bottom:16px"><h2>Ma photo de profil</h2><p class="mini">Choisis ton avatar : il s’affiche à côté de ton nom en haut à gauche. Tu peux aussi donner un nom à chacun des quatre avatars. Les noms et ton choix sont enregistrés automatiquement.</p><div id="avatarChoices" class="avatar-choices" role="group" aria-label="Choisir une photo de profil"></div><p id="avatarChoiceStatus" class="mini" role="status" aria-live="polite"></p></div>
   <div class="card" style="margin-bottom:16px"><h2 style="font-size:18px">Couleur dominante du site</h2><p class="mini">Choisis une nuance dans la mosaïque hexagonale, comme sur la palette de référence. Le thème est appliqué immédiatement à toutes les pages et enregistré automatiquement. Les couleurs des UE, des notes faibles et des jours de repos gardent leur rôle de repère.</p><div id="themePalette" class="hex-palette" role="group" aria-label="Couleur dominante du site"></div><p id="themeChoice" class="mini" role="status"></p></div>
@@ -388,6 +390,8 @@ body.calendar-open{overflow:hidden}
 @media(max-height:500px){#calendar .day{position:relative}#calendar .month-units{position:absolute;right:3px;top:3px;width:12px;gap:2px;padding:0}#calendar .month-unit{width:4px;height:4px;padding:0;border:0;font-size:0;border-radius:50%}.calendar-tools,.screen-calendar-card .legend{display:none}.screen-calendar-card>.section-title{flex-wrap:nowrap}#calendar .num{height:20px;width:20px;font-size:12px}.month-unit{font-size:9px}#calendar .calendar-total{font-size:9px}.month-markers{display:none}.screen-agenda{padding:8px}.agenda-toolbar h2{font-size:18px}.screen-agenda .btn{min-height:30px;padding:5px 10px;font-size:12px}.agenda-content .agenda-row{padding:8px}.agenda-content .agenda-row strong{-webkit-line-clamp:2;font-size:14px}.agenda-content .agenda-row p{display:none}.screen-agenda .mini{font-size:12px}}
 </style>
 <style>.cloud-badge{font:inherit;font-size:13px;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--theme-soft);color:var(--accent-ink);margin-bottom:15px;text-align:left;cursor:pointer}.cloud-panel details{line-height:1.6}.cloud-rules{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;background:#f2f3f7;color:var(--ink);padding:15px;border-radius:15px}.cloud-panel [hidden]{display:none!important}</style>
+<style>.cloud-access-status{padding:12px 15px;border-radius:15px;background:#fff3dc;color:#784e00;font-size:15px;font-weight:650;margin-bottom:14px;overflow-wrap:anywhere}.cloud-access-status.access-confirmed{background:#e1f4ed;color:#17513e;border:1px solid #70ad94}</style>
+<style>.quit-overlay{position:fixed;inset:0;z-index:12000;display:flex;align-items:center;justify-content:center;padding:20px;background:var(--bg);box-sizing:border-box}.quit-overlay[hidden]{display:none}.quit-overlay .card{width:min(100%,520px);text-align:center;line-height:1.7}.quit-overlay h2{margin-top:0}.quit-overlay button[hidden]{display:none}</style>
 <dialog id="dayAgendaDialog" class="screen-agenda"><div class="agenda-toolbar"><h2 id="agendaTitle"></h2><button class="btn" onclick="dayAgendaDialog.close()">Fermer</button></div><div id="dayAgenda"></div></dialog>
 <dialog id="sessionDialog"><h2 id="sessionDialogTitle">Placer une séance</h2><input id="sessionEditId" type="hidden"><div class="form-grid">
 <div><label>Date</label><input id="sessionDate" type="date"></div><div><label>Heure (facultative)</label><input id="sessionTime" type="time"></div>
@@ -781,9 +785,16 @@ function renderAll(){renderProfileAvatar();applySiteTheme();renderThemePalette()
 const FIREBASE_CONFIG={apiKey:'AIzaSyDyubYBvXtWjchhekBSWwWWKK_KvW7V7iU',authDomain:'prepa-meloe.firebaseapp.com',projectId:'prepa-meloe',storageBucket:'prepa-meloe.firebasestorage.app',messagingSenderId:'829644958155',appId:'1:829644958155:web:3726d32199bf6880d0ee4e',measurementId:'G-8NHX6889Z8'};
 const CLOUD_ADMIN='jfabriceturpin@gmail.com',CLOUD_META_KEY='meloe_cloud_meta_v1';
 let cloudMeta;try{cloudMeta=JSON.parse(localStorage.getItem(CLOUD_META_KEY)||'{}')}catch(e){cloudMeta={}}
-let cloud={sdk:null,auth:null,ref:null,user:null,stop:null,ready:false,writing:false,conflict:false,remote:null,timer:null,version:Number.isInteger(cloudMeta.revision)?cloudMeta.revision:null,change:0,message:'Firebase configuré · connexion Google requise.'};
+let cloud={accessChecked:false,memberEmail:'',accessTime:'',sdk:null,auth:null,ref:null,user:null,stop:null,ready:false,writing:false,conflict:false,remote:null,timer:null,version:Number.isInteger(cloudMeta.revision)?cloudMeta.revision:null,change:0,message:'Firebase configuré · connexion Google requise.'};
 function cloudPayload(){return JSON.stringify({state,codeHash:projectCodeHash()})}
-function cloudStatus(message){cloud.message=message;cloudStatusText.textContent=message;cloudBadge.textContent=message;cloudAccount.textContent=cloud.user?.email||'Aucun compte connecté';cloudEmailPanel.hidden=cloud.user?.email?.toLowerCase()!==CLOUD_ADMIN;cloudInitialise.hidden=!(cloud.ready&&!cloud.remote);cloudConflictPanel.hidden=!cloud.conflict}
+function cloudStatus(message){cloud.message=message;cloudStatusText.textContent=message;cloudBadge.textContent=message;cloudAccount.textContent=cloud.user?.email||'Aucun compte connecté';cloudEmailPanel.hidden=cloud.user?.email?.toLowerCase()!==CLOUD_ADMIN;renderCloudAccess();cloudInitialise.hidden=!(cloud.ready&&!cloud.remote);cloudConflictPanel.hidden=!cloud.conflict}
+function renderCloudAccess(){
+ const confirmed=cloud.accessChecked&&!!cloud.user;
+ cloudAccessStatus.classList.toggle('access-confirmed',confirmed&&!!cloud.memberEmail);
+ cloudAccessStatus.textContent=confirmed?(cloud.memberEmail?'✓ Accès de Méloé confirmé en ligne : '+cloud.memberEmail+' · vérifié à '+cloud.accessTime:'Aucun compte de Méloé autorisé dans le carnet en ligne.'):'Accès de Méloé : vérification en attente de la connexion Firebase.';
+}
+function confirmCloudAccess(email){cloud.accessChecked=true;cloud.memberEmail=email||'';cloud.accessTime=new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});renderCloudAccess()}
+
 function cloudRemember(){localStorage.setItem(CLOUD_META_KEY,JSON.stringify(cloudMeta))}
 function cloudDirty(){cloudMeta.pending=true;cloud.change++;try{cloudRemember()}catch(e){}if(!cloud.user){cloudStatus('Enregistré sur cet appareil · connexion requise pour synchroniser.');return}cloudStatus(cloud.conflict?'Deux versions à départager.':'Modifications enregistrées localement · synchronisation en attente.');clearTimeout(cloud.timer);cloud.timer=setTimeout(()=>cloudPush(),1800)}
 function cloudArchive(){localStorage.setItem('meloe_before_cloud_restore',JSON.stringify({date:new Date().toISOString(),payload:cloudPayload()}))}
@@ -794,7 +805,7 @@ async function cloudPrepare(){
  const base='https://www.gstatic.com/firebasejs/12.19.0/';
  const [appSDK,authSDK,dbSDK]=await Promise.all([import(base+'firebase-app.js'),import(base+'firebase-auth.js'),import(base+'firebase-firestore.js')]);
  cloud.sdk={...authSDK,...dbSDK};const app=appSDK.getApps().find(a=>a.name==='meloe-pass')||appSDK.initializeApp(FIREBASE_CONFIG,'meloe-pass');cloud.auth=authSDK.getAuth(app);cloud.ref=dbSDK.doc(dbSDK.getFirestore(app),'carnets','meloe-pass-s1');
- authSDK.onAuthStateChanged(cloud.auth,user=>{cloudPause();cloud.user=user;cloud.ready=false;cloud.remote=null;if(user&&projectUnlocked){cloudStatus('Lecture du carnet en ligne…');cloudListen()}else cloudStatus(user?'Compte connecté · carnet verrouillé.':'Mode local · connexion Google requise.')});
+ authSDK.onAuthStateChanged(cloud.auth,user=>{cloudPause();cloud.user=user;cloud.accessChecked=false;cloud.ready=false;cloud.remote=null;if(user&&projectUnlocked){cloudStatus('Lecture du carnet en ligne…');cloudListen()}else cloudStatus(user?'Compte connecté · carnet verrouillé.':'Mode local · connexion Google requise.')});
 }
 async function cloudConnect(){if(!projectUnlocked)return;try{await cloudPrepare();localStorage.setItem('meloe_cloud_enabled','yes');if(cloud.auth.currentUser){cloud.user=cloud.auth.currentUser;cloudListen();return}await cloud.sdk.signInWithPopup(cloud.auth,new cloud.sdk.GoogleAuthProvider());localStorage.setItem('meloe_cloud_enabled','yes')}catch(e){cloudError(e)}}
 function cloudSyncNow(){if(!cloud.user){cloudStatus('Connecte ton compte Google pour synchroniser.');return}cloudListen();if(cloud.ready)cloudPush();else cloudStatus('Reconnexion et lecture du carnet en ligne…')}
@@ -805,10 +816,10 @@ function cloudListen(){
  cloud.stop=cloud.sdk.onSnapshot(cloud.ref,{includeMetadataChanges:true},snap=>{
   if(snap.metadata.fromCache||snap.metadata.hasPendingWrites)return;
   cloud.ready=true;
-  if(!snap.exists()){cloud.remote=null;cloud.version=0;cloudStatus('Aucun carnet en ligne. Fabrice peut le créer avec les données locales.');return}
+  if(!snap.exists()){confirmCloudAccess('');cloud.remote=null;cloud.version=0;cloudStatus('Aucun carnet en ligne. Fabrice peut le créer avec les données locales.');return}
   const data=snap.data();cloud.remote=data;
   try{cloudValidate(data)}catch(e){cloudStatus('Carnet en ligne invalide : données locales conservées.');return}
-  if(document.activeElement!==cloudShareEmail)cloudShareEmail.value=data.memberEmail||'';
+  confirmCloudAccess(data.memberEmail);if(document.activeElement!==cloudShareEmail)cloudShareEmail.value=data.memberEmail||'';
   if(cloud.writing)return;
   if(cloudMeta.pending){if(cloud.version===data.revision){cloudStatus('Modifications locales en attente.');cloudPush()}else{cloud.conflict=true;cloudStatus('Deux versions existent : choisis laquelle conserver.')}return}
   if(data.revision===cloud.version){cloudStatus('Synchronisé · '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}));return}
@@ -818,7 +829,7 @@ function cloudListen(){
 }
 function cloudValidate(data){if(!data||!Number.isInteger(data.revision)||data.revision<1||typeof data.payload!=='string'||data.payload.length>750000)throw Error('format');const p=JSON.parse(data.payload);validateImport(p.state);if(!/^[0-9a-f]{64}$/.test(p.codeHash))throw Error('code');return p}
 function cloudApply(data){
- const p=cloudValidate(data);cloudArchive();state=p.state;localStorage.setItem(PROJECT_CODE_KEY,p.codeHash);normalizeState();localStorage.setItem(KEY,JSON.stringify(state));cloud.version=data.revision;cloudMeta={revision:data.revision,pending:false};cloudRemember();cloud.conflict=false;fillUEFilters();loadSettingsUI();renderAll();cloudStatus('Synchronisé · carnet en ligne chargé.');
+ const p=cloudValidate(data);confirmCloudAccess(data.memberEmail);cloudArchive();state=p.state;localStorage.setItem(PROJECT_CODE_KEY,p.codeHash);normalizeState();localStorage.setItem(KEY,JSON.stringify(state));cloud.version=data.revision;cloudMeta={revision:data.revision,pending:false};cloudRemember();cloud.conflict=false;fillUEFilters();loadSettingsUI();renderAll();cloudStatus('Synchronisé · carnet en ligne chargé.');
 }
 async function cloudPush(force=false,initialise=false){
  if(!cloud.user||!projectUnlocked||!cloud.ready||cloud.writing||document.hidden||(!force&&!cloudMeta.pending)||(!force&&cloud.conflict))return;
@@ -843,7 +854,7 @@ async function cloudShare(){
  if(!cloud.user||cloud.user.email.toLowerCase()!==CLOUD_ADMIN)return;
  const email=cloudShareEmail.value.trim().toLowerCase();if(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){cloudStatus('Entre une adresse e-mail valide.');return}
  if(!cloud.remote){cloudStatus('Crée d’abord le carnet en ligne.');return}
- try{await cloud.sdk.updateDoc(cloud.ref,{memberEmail:email});cloudStatus(email?'Compte de Méloé autorisé : '+email:'Accès de Méloé retiré.')}catch(e){cloudError(e)}
+ try{await cloud.sdk.updateDoc(cloud.ref,{memberEmail:email});cloud.remote.memberEmail=email;confirmCloudAccess(email);cloudStatus(email?'Compte de Méloé autorisé : '+email:'Accès de Méloé retiré.')}catch(e){cloudError(e)}
 }
 function cloudAfterUnlock(){try{if(localStorage.getItem('meloe_cloud_enabled')==='yes')cloudPrepare().then(()=>cloudListen()).catch(cloudError)}catch(e){}}
 const FIRESTORE_RULES=`rules_version = '2';
@@ -873,6 +884,36 @@ service cloud.firestore {
 async function cloudCopyRules(){try{await navigator.clipboard.writeText(FIRESTORE_RULES);cloudStatus('Règles copiées. Colle-les dans Firestore → Règles, puis Publier.')}catch(e){cloudStatus('Sélectionne les règles ci-dessous pour les copier.')}}
 document.addEventListener('visibilitychange',()=>{if(document.hidden)cloudPause();else{cloudListen();if(cloud.ready)cloudPush()}});
 document.addEventListener('focusout',()=>setTimeout(()=>{if(cloud.remote&&!cloud.writing&&!cloudMeta.pending&&cloud.remote.revision!==cloud.version&&!['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))try{cloudApply(cloud.remote)}catch(e){cloudError(e)}},0));
+
+
+let quitBusy=false;
+function quitDeadline(promise){let timer;return Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Firebase ne répond pas. Le carnet reste ouvert ; réessaie quand la connexion revient.')),20000)})]).finally(()=>clearTimeout(timer))}
+async function waitCloudIdle(){const start=Date.now();while(cloud.writing){if(Date.now()-start>20000)throw Error('Une sauvegarde est encore en cours. Attends sa confirmation puis réessaie.');await new Promise(resolve=>setTimeout(resolve,100))}}
+async function quitProject(){
+ if(quitBusy)return;
+ document.activeElement?.blur?.();
+ quitBusy=true;quitButton.disabled=true;quitOverlay.hidden=false;quitReturn.hidden=true;quitTitle.textContent='Sauvegarde avant fermeture';quitMessage.textContent='Vérification de l’enregistrement dans Firebase…';
+ try{
+  normalizeState();localStorage.setItem(KEY,JSON.stringify(state));
+  if(!cloud.user||!cloud.sdk)throw Error('Connecte ton compte Google dans Paramètres pour enregistrer dans Firebase avant de quitter. Tes données restent enregistrées localement.');
+  await waitCloudIdle();clearTimeout(cloud.timer);
+  if(!cloud.ready||!cloud.remote)throw Error('Le carnet en ligne n’est pas disponible. Vérifie la connexion ou crée le carnet dans Paramètres.');
+  if(cloud.conflict)throw Error('Deux versions sont en conflit. Choisis la version à conserver dans Paramètres avant de quitter.');
+  if(cloudPayload()!==cloud.remote.payload&&!cloudMeta.pending)cloudDirty();
+  clearTimeout(cloud.timer);
+  if(cloudMeta.pending)await quitDeadline(cloudPush());
+  if(cloudMeta.pending||cloud.conflict||cloud.writing)throw Error(cloud.message+' Le carnet reste ouvert pour préserver tes modifications.');
+  const snap=await quitDeadline(cloud.sdk.getDocFromServer(cloud.ref));
+  if(!snap.exists())throw Error('Le carnet n’a pas été trouvé dans Firebase. Fermeture annulée.');
+  const data=snap.data();cloudValidate(data);
+  if(data.payload!==cloudPayload()){cloud.remote=data;cloud.conflict=true;cloudStatus('Deux versions à départager avant fermeture.');throw Error('La version en ligne diffère. Choisis la version à conserver dans Paramètres avant de quitter.')}
+  cloud.version=data.revision;cloudMeta={revision:data.revision,pending:false};cloudRemember();
+  lockProject();quitTitle.textContent='Carnet fermé';quitMessage.textContent='Toutes tes données sont enregistrées dans Firebase. Tu peux fermer cet onglet si le navigateur le laisse ouvert.';quitReturn.hidden=false;
+  try{window.close()}catch(e){}
+ }catch(e){quitOverlay.hidden=true;const message=e?.code?'Fermeture annulée : '+(e.message||e.code):e.message;cloudStatus(message);toast(message)}
+ finally{quitBusy=false;quitButton.disabled=false}
+}
+window.addEventListener('beforeunload',event=>{if(cloudMeta.pending||cloud.writing||quitBusy){event.preventDefault();event.returnValue=''}});
 
 cloudRules.textContent=FIRESTORE_RULES;cloudStatus(cloud.message);
 normalizeState();fillUEFilters();loadSettingsUI();renderAll();decorateNavigation();
