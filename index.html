@@ -69,7 +69,7 @@ textarea{min-height:80px;resize:vertical}
 <div id="projectLock" class="project-lock"><form class="card lock-card" onsubmit="event.preventDefault();unlockProject()"><h1>Bienvenue, Méloé</h1><p>Entre ton code à six chiffres pour ouvrir ton carnet.</p><label for="unlockCode">Code d’accès</label><input id="unlockCode" type="password" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="off" required><button class="btn primary" type="submit">Ouvrir mon carnet</button><p id="lockStatus" role="status" aria-live="polite"></p></form></div>
 <div class="app">
 <aside>
-  <div class="brand"><img id="profileAvatar" class="profile-avatar" width="52" height="52" alt="Avatar de Méloé"><span>Méloé<small>Mon carnet de révision · V15</small></span></div>
+  <div class="brand"><img id="profileAvatar" class="profile-avatar" width="52" height="52" alt="Avatar de Méloé"><span>Méloé<small>Mon carnet de révision · V16</small></span></div>
   <div class="nav">
     <button class="active" data-page="dashboard">Tableau de bord</button>
     <button data-page="programme">Programme & items</button>
@@ -84,6 +84,7 @@ textarea{min-height:80px;resize:vertical}
 </aside>
 
 <main>
+<button id="cloudBadge" class="cloud-badge" onclick="go('parametres')">Firebase configuré · connexion Google requise.</button>
 <div class="topbar">
   <div><h1 id="pageTitle">Mon espace</h1><div class="subtitle" id="pageSubtitle">Tes cours, tes journées, tes progrès.</div></div>
   <div class="actions">
@@ -167,8 +168,8 @@ textarea{min-height:80px;resize:vertical}
   </div>
 </section>
 
-<section id="parametres" class="section">
-<div class="card" style="margin-bottom:16px"><h2>Code d’accès au logiciel</h2><p class="mini">Six chiffres. Le code est demandé à chaque ouverture. Ce réglage s’applique à ce navigateur ; la connexion Firebase reste à configurer.</p><form onsubmit="event.preventDefault();changeProjectCode()"><div class="form-grid"><div><label for="currentCode">Code actuel</label><input id="currentCode" type="password" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" autocomplete="off" required></div><div><label for="newCode">Nouveau code</label><input id="newCode" type="password" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" autocomplete="off" required></div><div><label for="confirmCode">Confirmer le nouveau code</label><input id="confirmCode" type="password" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" autocomplete="off" required></div></div><div class="actions" style="margin-top:14px"><button type="submit" class="btn primary">Changer le code</button><button type="button" class="btn" onclick="lockProject()">Verrouiller le carnet</button></div><p id="codeChangeStatus" role="status" aria-live="polite"></p></form></div>
+<section id="parametres" class="section"><div class="card cloud-panel" style="margin-bottom:16px"><h2>Synchronisation Firebase</h2><p class="mini">Projet : prepa-meloe · ton carnet partagé entre tes appareils.</p><p id="cloudStatusText" role="status" aria-live="polite">Firebase configuré · connexion Google requise.</p><p id="cloudAccount" class="mini">Aucun compte connecté</p><div class="actions"><button class="btn primary" onclick="cloudConnect()">Connexion Google</button><button class="btn" onclick="cloudSyncNow()">Synchroniser</button><button class="btn" onclick="cloudDisconnect()">Déconnecter</button><button id="cloudInitialise" hidden class="btn good" onclick="cloudCreate()">Créer le carnet en ligne</button></div><div id="cloudConflictPanel" hidden class="warning-box"><p>Les données locales sont conservées. Sauvegarde-les en JSON avant de choisir.</p><div class="actions"><button class="btn" onclick="cloudUseRemote()">Utiliser la version en ligne</button><button class="btn" onclick="cloudUseLocal()">Publier la version locale</button></div></div><div id="cloudEmailPanel" hidden style="margin-top:16px"><label for="cloudShareEmail">Compte Google de Méloé à autoriser</label><input id="cloudShareEmail" type="email" autocomplete="off" placeholder="Adresse Google de Méloé"><button class="btn" style="margin-top:10px" onclick="cloudShare()">Enregistrer l’accès de Méloé</button></div><details style="margin-top:18px"><summary>Première configuration Firebase</summary><ol><li>Dans le projet prepa-meloe, ouvre Authentication → Mode de connexion et active Google (choisis une adresse d’assistance).</li><li>Dans Authentication → Paramètres → Domaines autorisés, ajoute le domaine qui héberge ce logiciel, par exemple ton nom.github.io. Utilise l’adresse web du logiciel pour te connecter.</li><li>Ouvre Firestore Database, crée une base si nécessaire, puis onglet Règles. Copie les règles ci-dessous et clique sur Publier. Elles concernent uniquement ce projet Méloé.</li><li>Connecte-toi avec jfabriceturpin@gmail.com, puis clique sur Créer le carnet en ligne. Les données de cet appareil seront utilisées.</li><li>Entre le compte Google de Méloé dans le champ ci-dessus et enregistre son accès. Elle pourra ensuite se connecter sur ses appareils.</li></ol><button class="btn" onclick="cloudCopyRules()">Copier les règles Firestore</button><pre id="cloudRules" class="cloud-rules"></pre><p class="mini">Le code à six chiffres verrouille l’interface. Le compte Google et les règles Firestore contrôlent l’accès aux données. Sans connexion, tu peux continuer localement. Une version concurrente est signalée avant remplacement.</p></details></div>
+<div class="card" style="margin-bottom:16px"><h2>Code d’accès au logiciel</h2><p class="mini">Six chiffres. Le code est demandé à chaque ouverture. Le code est synchronisé avec le carnet lorsque Firebase est connecté.</p><form onsubmit="event.preventDefault();changeProjectCode()"><div class="form-grid"><div><label for="currentCode">Code actuel</label><input id="currentCode" type="password" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" autocomplete="off" required></div><div><label for="newCode">Nouveau code</label><input id="newCode" type="password" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" autocomplete="off" required></div><div><label for="confirmCode">Confirmer le nouveau code</label><input id="confirmCode" type="password" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" autocomplete="off" required></div></div><div class="actions" style="margin-top:14px"><button type="submit" class="btn primary">Changer le code</button><button type="button" class="btn" onclick="lockProject()">Verrouiller le carnet</button></div><p id="codeChangeStatus" role="status" aria-live="polite"></p></form></div>
   <div class="card avatar-settings" style="margin-bottom:16px"><h2>Ma photo de profil</h2><p class="mini">Choisis ton avatar : il s’affiche à côté de ton nom en haut à gauche. Tu peux aussi donner un nom à chacun des quatre avatars. Les noms et ton choix sont enregistrés automatiquement.</p><div id="avatarChoices" class="avatar-choices" role="group" aria-label="Choisir une photo de profil"></div><p id="avatarChoiceStatus" class="mini" role="status" aria-live="polite"></p></div>
   <div class="card" style="margin-bottom:16px"><h2 style="font-size:18px">Couleur dominante du site</h2><p class="mini">Choisis une nuance dans la mosaïque hexagonale, comme sur la palette de référence. Le thème est appliqué immédiatement à toutes les pages et enregistré automatiquement. Les couleurs des UE, des notes faibles et des jours de repos gardent leur rôle de repère.</p><div id="themePalette" class="hex-palette" role="group" aria-label="Couleur dominante du site"></div><p id="themeChoice" class="mini" role="status"></p></div>
   <div class="card">
@@ -386,6 +387,7 @@ body.calendar-open{overflow:hidden}
 @media(max-width:650px){#calendrier.active{padding:5px}.screen-calendar-card{padding:10px!important;gap:5px;border-radius:18px}.screen-calendar-card>.section-title{flex-wrap:wrap;gap:5px}.screen-calendar-card h2{font-size:20px}.screen-calendar-card .actions{gap:5px}.screen-calendar-card .btn{font-size:12px;padding:6px 9px;min-height:32px}.calendar-tools p{font-size:12px}.screen-calendar-card .legend .ue-tag{font-size:10px;padding:1px 3px}#calendar .day{padding:3px 1px}#calendar .num{font-size:14px;width:24px;height:24px}.month-unit{font-size:9px;padding:0 2px}.month-units{gap:2px}#calendar .calendar-total{font-size:9px}.month-markers>span{font-size:9px}.screen-agenda{padding:14px}.agenda-toolbar h2{font-size:20px}.agenda-content .agenda-row{padding:14px}.agenda-content .agenda-row strong{font-size:16px}.agenda-content .actions .btn{font-size:13px;padding:9px;min-height:40px}.rest-fullscreen{padding:12px!important}.rest-fullscreen h3{font-size:18px}.rest-fullscreen .btn{font-size:13px;min-height:34px;padding:7px 10px}}
 @media(max-height:500px){#calendar .day{position:relative}#calendar .month-units{position:absolute;right:3px;top:3px;width:12px;gap:2px;padding:0}#calendar .month-unit{width:4px;height:4px;padding:0;border:0;font-size:0;border-radius:50%}.calendar-tools,.screen-calendar-card .legend{display:none}.screen-calendar-card>.section-title{flex-wrap:nowrap}#calendar .num{height:20px;width:20px;font-size:12px}.month-unit{font-size:9px}#calendar .calendar-total{font-size:9px}.month-markers{display:none}.screen-agenda{padding:8px}.agenda-toolbar h2{font-size:18px}.screen-agenda .btn{min-height:30px;padding:5px 10px;font-size:12px}.agenda-content .agenda-row{padding:8px}.agenda-content .agenda-row strong{-webkit-line-clamp:2;font-size:14px}.agenda-content .agenda-row p{display:none}.screen-agenda .mini{font-size:12px}}
 </style>
+<style>.cloud-badge{font:inherit;font-size:13px;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--theme-soft);color:var(--accent-ink);margin-bottom:15px;text-align:left;cursor:pointer}.cloud-panel details{line-height:1.6}.cloud-rules{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;background:#f2f3f7;color:var(--ink);padding:15px;border-radius:15px}.cloud-panel [hidden]{display:none!important}</style>
 <dialog id="dayAgendaDialog" class="screen-agenda"><div class="agenda-toolbar"><h2 id="agendaTitle"></h2><button class="btn" onclick="dayAgendaDialog.close()">Fermer</button></div><div id="dayAgenda"></div></dialog>
 <dialog id="sessionDialog"><h2 id="sessionDialogTitle">Placer une séance</h2><input id="sessionEditId" type="hidden"><div class="form-grid">
 <div><label>Date</label><input id="sessionDate" type="date"></div><div><label>Heure (facultative)</label><input id="sessionTime" type="time"></div>
@@ -406,7 +408,7 @@ let state=load()||{
   items:PROGRAMME,sessions:[],checkpoints:[],unscheduled:[]
 };
 function load(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
-function save(){normalizeState();fillUEFilters();try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){toast("Sauvegarde locale indisponible. Exportez vos données en JSON.")}renderAll()}
+function save(){normalizeState();fillUEFilters();try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){toast("Sauvegarde locale indisponible. Exportez vos données en JSON.")}cloudDirty();renderAll()}
 function toast(t){const e=document.getElementById("toast");e.textContent=t;e.classList.add("show");setTimeout(()=>e.classList.remove("show"),1800)}
 function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]))}
 function fmt(d){if(!d)return"—";return new Date(d+"T12:00:00").toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"})}
@@ -599,7 +601,7 @@ function renderQcm(){
  const items=state.items.filter(i=>(!ue||i.block===ue)&&(!q||[i.name,i.discipline,i.reference].join(' ').toLocaleLowerCase('fr').includes(q)));
  qcmList.innerHTML=items.length?items.map(i=>{const stats=qcmStats(i);return `<div class="qcm-card" style="border-left-color:${ueColor(i.block).line}"><span class="ue-tag" style="${ueStyle(i.block)}">${esc(i.block)}</span><strong> ${courseIcon(i)} ${esc(i.reference||'')} — ${esc(i.name)}</strong><div class="mini" style="margin-top:8px">${esc(i.discipline||'')} ${i.active===false?'· Cours désactivé':''}</div><div class="qcm-inputs">${i.qcm.map((score,index)=>`<div><label for="qcm-${i.id}-${index}">QCM ${index+1} /20</label><input id="qcm-${i.id}-${index}" class="${score!==null&&score<10?'qcm-low':''}" type="number" min="0" max="20" step="0.1" inputmode="decimal" value="${score===null?'':score}" onchange="setQcm('${i.id}',${index},this)"></div>`).join('')}</div><div class="actions"><span id="qcm-summary-${i.id}" class="mini">${stats.mean===null?'Aucune note':stats.scores.length+' note(s) · moyenne '+stats.mean.toFixed(1)+'/20'}${stats.low.length?' · '+stats.low.length+' note(s) < 10, priorité':''}</span><button class="btn" onclick="addQcmSlot('${i.id}')">+ Une case QCM</button><button class="btn" onclick="planItem('${i.id}')">Placer une révision</button></div></div>`}).join(''):'<div class="empty">Aucun cours trouvé.</div>';
 }
-function setQcm(id,index,input){const i=state.items.find(i=>i.id===id);if(!i)return;const text=input.value.trim(),score=text===''?null:Number(text);if(input.validity?.badInput||score!==null&&(!Number.isFinite(score)||score<0||score>20)){toast('Note attendue entre 0 et 20.');input.value=i.qcm[index]??'';return}i.qcm[index]=score;try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){toast('Sauvegarde locale indisponible. Exporte tes données.');return}input.classList?.toggle('qcm-low',score!==null&&score<10);const stats=qcmStats(i),summary=document.getElementById('qcm-summary-'+id);if(summary)summary.textContent=(stats.mean===null?'Aucune note':stats.scores.length+' note(s) · moyenne '+stats.mean.toFixed(1)+'/20')+(stats.low.length?' · '+stats.low.length+' note(s) < 10, priorité':'');renderReminders();renderDashboard();toast('Note enregistrée.')}
+function setQcm(id,index,input){const i=state.items.find(i=>i.id===id);if(!i)return;const text=input.value.trim(),score=text===''?null:Number(text);if(input.validity?.badInput||score!==null&&(!Number.isFinite(score)||score<0||score>20)){toast('Note attendue entre 0 et 20.');input.value=i.qcm[index]??'';return}i.qcm[index]=score;try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){toast('Sauvegarde locale indisponible. Exporte tes données.');return}cloudDirty();input.classList?.toggle('qcm-low',score!==null&&score<10);const stats=qcmStats(i),summary=document.getElementById('qcm-summary-'+id);if(summary)summary.textContent=(stats.mean===null?'Aucune note':stats.scores.length+' note(s) · moyenne '+stats.mean.toFixed(1)+'/20')+(stats.low.length?' · '+stats.low.length+' note(s) < 10, priorité':'');renderReminders();renderDashboard();toast('Note enregistrée.')}
 function addQcmSlot(id){const i=state.items.find(i=>i.id===id);if(!i)return;if(i.qcm.length>=100)return toast('Maximum : 100 notes par cours.');i.qcm.push(null);save()}
 function reminderInfo(i){const done=itemDoneCount(i.id),low=qcmStats(i).low,major=['UE1B','UE1G'].includes(String(i.block).toUpperCase()),days=daysDiff(todayISO(),state.settings.deadline),near=days>=0&&days<=state.settings.nearDays;return {item:i,done,low,major,near,priority:low.length>0||(major&&done<3),missing:Math.max(0,3-done)}}
 function reminderList(){return state.items.filter(i=>i.active!==false).map(reminderInfo).filter(r=>r.missing>0||r.low.length>0).sort((a,b)=>(b.low.length>0)-(a.low.length>0)||Number(b.major)-Number(a.major)||b.missing-a.missing||a.item.id.localeCompare(b.item.id))}
@@ -747,7 +749,7 @@ function renameProfileAvatar(id,value){
  if(!PROFILE_AVATARS.some(a=>a.id===id)||typeof value!=='string')return;
  state.settings.avatarNames[id]=value.slice(0,80);
  try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){toast('Sauvegarde locale indisponible. Exporte tes données.')}
- renderProfileAvatar(false);
+ cloudDirty();renderProfileAvatar(false);
 }
 function chooseProfileAvatar(id){if(!PROFILE_AVATARS.some(a=>a.id===id))return;state.settings.avatarId=id;save();toast('Photo de profil enregistrée.')}
 
@@ -761,21 +763,118 @@ async function unlockProject(){
  const code=unlockCode.value;
  if(!/^\d{6}$/.test(code)){lockStatus.textContent='Entre un code de six chiffres.';return}
  try{if(await digestProjectCode(code)!==projectCodeHash()){lockStatus.textContent='Code incorrect.';unlockCode.value='';return}
- projectUnlocked=true;unlockCode.value='';lockStatus.textContent='';projectLock.hidden=true;document.body.classList.remove('project-locked');
+ projectUnlocked=true;unlockCode.value='';lockStatus.textContent='';projectLock.hidden=true;document.body.classList.remove('project-locked');cloudAfterUnlock();
  }catch(e){lockStatus.textContent='La vérification du code est indisponible dans ce navigateur.'}
 }
-function lockProject(){projectUnlocked=false;if(dayAgendaDialog.open)dayAgendaDialog.close();if(sessionDialog.open)sessionDialog.close();closeRestCalendar();projectLock.hidden=false;document.body.classList.add('project-locked');unlockCode.value='';lockStatus.textContent='';currentCode.value='';newCode.value='';confirmCode.value='';unlockCode.focus()}
+function lockProject(){cloudPause();projectUnlocked=false;if(dayAgendaDialog.open)dayAgendaDialog.close();if(sessionDialog.open)sessionDialog.close();closeRestCalendar();projectLock.hidden=false;document.body.classList.add('project-locked');unlockCode.value='';lockStatus.textContent='';currentCode.value='';newCode.value='';confirmCode.value='';unlockCode.focus()}
 async function changeProjectCode(){
  if(!projectUnlocked)return;
  const old=currentCode.value,next=newCode.value;
  if(!/^\d{6}$/.test(old)||!/^\d{6}$/.test(next)){codeChangeStatus.textContent='Les codes doivent contenir exactement six chiffres.';return}
  if(next!==confirmCode.value){codeChangeStatus.textContent='Les deux nouveaux codes sont différents.';return}
  try{if(await digestProjectCode(old)!==projectCodeHash()){codeChangeStatus.textContent='Le code actuel est incorrect.';return}
- localStorage.setItem(PROJECT_CODE_KEY,await digestProjectCode(next));currentCode.value='';newCode.value='';confirmCode.value='';codeChangeStatus.textContent='Nouveau code enregistré dans ce navigateur.';
+ localStorage.setItem(PROJECT_CODE_KEY,await digestProjectCode(next));cloudDirty();currentCode.value='';newCode.value='';confirmCode.value='';codeChangeStatus.textContent='Nouveau code enregistré. Synchronisation en ligne si connecté.';
  }catch(e){codeChangeStatus.textContent='Le changement de code n’a pas pu être enregistré.'}
 }
 
 function renderAll(){renderProfileAvatar();applySiteTheme();renderThemePalette();renderItems();renderPlanning();renderDashboard();renderCheckpoints();renderCalendar();renderQcm();renderReminders();renderOffCalendar()}
+const FIREBASE_CONFIG={apiKey:'AIzaSyDyubYBvXtWjchhekBSWwWWKK_KvW7V7iU',authDomain:'prepa-meloe.firebaseapp.com',projectId:'prepa-meloe',storageBucket:'prepa-meloe.firebasestorage.app',messagingSenderId:'829644958155',appId:'1:829644958155:web:3726d32199bf6880d0ee4e',measurementId:'G-8NHX6889Z8'};
+const CLOUD_ADMIN='jfabriceturpin@gmail.com',CLOUD_META_KEY='meloe_cloud_meta_v1';
+let cloudMeta;try{cloudMeta=JSON.parse(localStorage.getItem(CLOUD_META_KEY)||'{}')}catch(e){cloudMeta={}}
+let cloud={sdk:null,auth:null,ref:null,user:null,stop:null,ready:false,writing:false,conflict:false,remote:null,timer:null,version:Number.isInteger(cloudMeta.revision)?cloudMeta.revision:null,change:0,message:'Firebase configuré · connexion Google requise.'};
+function cloudPayload(){return JSON.stringify({state,codeHash:projectCodeHash()})}
+function cloudStatus(message){cloud.message=message;cloudStatusText.textContent=message;cloudBadge.textContent=message;cloudAccount.textContent=cloud.user?.email||'Aucun compte connecté';cloudEmailPanel.hidden=cloud.user?.email?.toLowerCase()!==CLOUD_ADMIN;cloudInitialise.hidden=!(cloud.ready&&!cloud.remote);cloudConflictPanel.hidden=!cloud.conflict}
+function cloudRemember(){localStorage.setItem(CLOUD_META_KEY,JSON.stringify(cloudMeta))}
+function cloudDirty(){cloudMeta.pending=true;cloud.change++;try{cloudRemember()}catch(e){}if(!cloud.user){cloudStatus('Enregistré sur cet appareil · connexion requise pour synchroniser.');return}cloudStatus(cloud.conflict?'Deux versions à départager.':'Modifications enregistrées localement · synchronisation en attente.');clearTimeout(cloud.timer);cloud.timer=setTimeout(()=>cloudPush(),1800)}
+function cloudArchive(){localStorage.setItem('meloe_before_cloud_restore',JSON.stringify({date:new Date().toISOString(),payload:cloudPayload()}))}
+function cloudError(e){const code=e?.code||'';const messages={'auth/operation-not-allowed':'Active le fournisseur Google dans Firebase Authentication.','auth/unauthorized-domain':'Ajoute le domaine de ce site dans les domaines autorisés de Firebase Authentication.','auth/popup-blocked':'Autorise la fenêtre Google puis clique à nouveau sur Connexion Google.','auth/popup-closed-by-user':'Connexion Google annulée.','permission-denied':'Accès refusé : publie les règles Firestore puis vérifie le compte autorisé.','resource-exhausted':'Quota Firebase atteint. Les données locales sont conservées.','unavailable':'Firebase indisponible. Les données locales sont conservées.'};cloudStatus(messages[code]||('Connexion interrompue : '+(e?.message||code||'réessaie plus tard.')))}
+async function cloudPrepare(){
+ if(cloud.sdk)return;
+ if(!['http:','https:'].includes(location.protocol))throw Error('Ouvre le logiciel depuis son adresse web pour activer la connexion Google.');
+ const base='https://www.gstatic.com/firebasejs/12.19.0/';
+ const [appSDK,authSDK,dbSDK]=await Promise.all([import(base+'firebase-app.js'),import(base+'firebase-auth.js'),import(base+'firebase-firestore.js')]);
+ cloud.sdk={...authSDK,...dbSDK};const app=appSDK.getApps().find(a=>a.name==='meloe-pass')||appSDK.initializeApp(FIREBASE_CONFIG,'meloe-pass');cloud.auth=authSDK.getAuth(app);cloud.ref=dbSDK.doc(dbSDK.getFirestore(app),'carnets','meloe-pass-s1');
+ authSDK.onAuthStateChanged(cloud.auth,user=>{cloudPause();cloud.user=user;cloud.ready=false;cloud.remote=null;if(user&&projectUnlocked){cloudStatus('Lecture du carnet en ligne…');cloudListen()}else cloudStatus(user?'Compte connecté · carnet verrouillé.':'Mode local · connexion Google requise.')});
+}
+async function cloudConnect(){if(!projectUnlocked)return;try{await cloudPrepare();localStorage.setItem('meloe_cloud_enabled','yes');if(cloud.auth.currentUser){cloud.user=cloud.auth.currentUser;cloudListen();return}await cloud.sdk.signInWithPopup(cloud.auth,new cloud.sdk.GoogleAuthProvider());localStorage.setItem('meloe_cloud_enabled','yes')}catch(e){cloudError(e)}}
+function cloudSyncNow(){if(!cloud.user){cloudStatus('Connecte ton compte Google pour synchroniser.');return}cloudListen();if(cloud.ready)cloudPush();else cloudStatus('Reconnexion et lecture du carnet en ligne…')}
+async function cloudDisconnect(){cloudPause();if(cloud.auth)await cloud.sdk.signOut(cloud.auth);localStorage.removeItem('meloe_cloud_enabled');cloudStatus('Déconnecté · sauvegarde locale conservée.')}
+function cloudPause(){if(cloud.stop)cloud.stop();cloud.stop=null;clearTimeout(cloud.timer)}
+function cloudListen(){
+ if(!cloud.user||!projectUnlocked||document.hidden||cloud.stop)return;
+ cloud.stop=cloud.sdk.onSnapshot(cloud.ref,{includeMetadataChanges:true},snap=>{
+  if(snap.metadata.fromCache||snap.metadata.hasPendingWrites)return;
+  cloud.ready=true;
+  if(!snap.exists()){cloud.remote=null;cloud.version=0;cloudStatus('Aucun carnet en ligne. Fabrice peut le créer avec les données locales.');return}
+  const data=snap.data();cloud.remote=data;
+  try{cloudValidate(data)}catch(e){cloudStatus('Carnet en ligne invalide : données locales conservées.');return}
+  if(document.activeElement!==cloudShareEmail)cloudShareEmail.value=data.memberEmail||'';
+  if(cloud.writing)return;
+  if(cloudMeta.pending){if(cloud.version===data.revision){cloudStatus('Modifications locales en attente.');cloudPush()}else{cloud.conflict=true;cloudStatus('Deux versions existent : choisis laquelle conserver.')}return}
+  if(data.revision===cloud.version){cloudStatus('Synchronisé · '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}));return}
+  if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)){cloudStatus('Mise à jour disponible · elle sera appliquée après la saisie.');return}
+  cloudApply(data);
+ },e=>{cloud.ready=false;cloudPause();cloudError(e)});
+}
+function cloudValidate(data){if(!data||!Number.isInteger(data.revision)||data.revision<1||typeof data.payload!=='string'||data.payload.length>750000)throw Error('format');const p=JSON.parse(data.payload);validateImport(p.state);if(!/^[0-9a-f]{64}$/.test(p.codeHash))throw Error('code');return p}
+function cloudApply(data){
+ const p=cloudValidate(data);cloudArchive();state=p.state;localStorage.setItem(PROJECT_CODE_KEY,p.codeHash);normalizeState();localStorage.setItem(KEY,JSON.stringify(state));cloud.version=data.revision;cloudMeta={revision:data.revision,pending:false};cloudRemember();cloud.conflict=false;fillUEFilters();loadSettingsUI();renderAll();cloudStatus('Synchronisé · carnet en ligne chargé.');
+}
+async function cloudPush(force=false,initialise=false){
+ if(!cloud.user||!projectUnlocked||!cloud.ready||cloud.writing||document.hidden||(!force&&!cloudMeta.pending)||(!force&&cloud.conflict))return;
+ if(!cloud.remote&&!initialise){cloudStatus('Crée d’abord le carnet en ligne avec le bouton prévu.');return}
+ const payload=cloudPayload(),generation=cloud.change;
+ if(new TextEncoder().encode(payload).length>750000){cloudStatus('Sauvegarde trop volumineuse. Exporte une copie JSON.');return}
+ cloud.writing=true;cloudStatus('Enregistrement en ligne…');let written;
+ try{
+  written=await cloud.sdk.runTransaction(cloud.sdk.getFirestore(cloud.auth.app),async tx=>{
+   const snap=await tx.get(cloud.ref),data=snap.exists()?snap.data():null,revision=data?.revision||0;
+   if(!force&&revision!==(cloud.version||0)){const e=Error('Une autre version a été enregistrée.');e.code='cloud-conflict';throw e}
+   if(!data&&(!initialise||cloud.user.email.toLowerCase()!==CLOUD_ADMIN))throw Error('Fabrice doit initialiser le carnet.');
+   const next={payload,revision:revision+1,memberEmail:data?.memberEmail||'',updatedAt:cloud.sdk.serverTimestamp(),updatedBy:cloud.user.uid};tx.set(cloud.ref,next);return next;
+  });
+  cloud.version=written.revision;cloud.remote=written;cloudMeta={revision:written.revision,pending:generation!==cloud.change};cloudRemember();cloud.conflict=false;cloudStatus(cloudMeta.pending?'Nouvelles modifications en attente.':'Synchronisé · données enregistrées en ligne.');
+ }catch(e){if(e.code==='cloud-conflict'){cloud.conflict=true;cloudStatus('Modifications sur un autre appareil : choisis la version à conserver.')}else cloudError(e)}finally{cloud.writing=false;if(cloudMeta.pending&&!cloud.conflict&&written)cloud.timer=setTimeout(()=>cloudPush(),1800)}
+}
+async function cloudCreate(){if(!cloud.user||cloud.user.email.toLowerCase()!==CLOUD_ADMIN){cloudStatus('Connecte Fabrice pour créer le carnet.');return}cloudDirty();await cloudPush(false,true)}
+async function cloudUseRemote(){try{const snap=await cloud.sdk.getDocFromServer(cloud.ref);if(!snap.exists())throw Error('Aucun carnet en ligne.');cloudApply(snap.data())}catch(e){cloudError(e)}}
+async function cloudUseLocal(){if(!confirm('Publier les données de cet appareil à la place de la version en ligne ? Fais une sauvegarde JSON avant si nécessaire.'))return;await cloudPush(true)}
+async function cloudShare(){
+ if(!cloud.user||cloud.user.email.toLowerCase()!==CLOUD_ADMIN)return;
+ const email=cloudShareEmail.value.trim().toLowerCase();if(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){cloudStatus('Entre une adresse e-mail valide.');return}
+ if(!cloud.remote){cloudStatus('Crée d’abord le carnet en ligne.');return}
+ try{await cloud.sdk.updateDoc(cloud.ref,{memberEmail:email});cloudStatus(email?'Compte de Méloé autorisé : '+email:'Accès de Méloé retiré.')}catch(e){cloudError(e)}
+}
+function cloudAfterUnlock(){try{if(localStorage.getItem('meloe_cloud_enabled')==='yes')cloudPrepare().then(()=>cloudListen()).catch(cloudError)}catch(e){}}
+const FIRESTORE_RULES=`rules_version = '2';
+service cloud.firestore {
+ match /databases/{database}/documents {
+  function verified() { return request.auth != null && request.auth.token.email_verified == true; }
+  function admin() { return verified() && request.auth.token.email == 'jfabriceturpin@gmail.com'; }
+  match /carnets/meloe-pass-s1 {
+   allow get: if admin() || (verified() && request.auth.token.email == resource.data.memberEmail);
+   allow list, delete: if false;
+   allow create: if admin() && request.resource.data.keys().hasOnly(['payload','revision','memberEmail','updatedAt','updatedBy'])
+     && request.resource.data.payload is string && request.resource.data.payload.size() < 750000
+     && request.resource.data.revision == 1 && request.resource.data.memberEmail == ''
+     && request.resource.data.updatedBy == request.auth.uid && request.resource.data.updatedAt == request.time;
+   allow update: if (admin() || (verified() && request.auth.token.email == resource.data.memberEmail))
+     && request.resource.data.keys().hasOnly(['payload','revision','memberEmail','updatedAt','updatedBy'])
+     && request.resource.data.payload is string && request.resource.data.payload.size() < 750000
+     && request.resource.data.memberEmail is string && request.resource.data.memberEmail.size() < 255
+     && (admin() || request.resource.data.memberEmail == resource.data.memberEmail)
+     && ((request.resource.data.revision == resource.data.revision + 1
+          && request.resource.data.updatedBy == request.auth.uid && request.resource.data.updatedAt == request.time)
+         || (admin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberEmail'])));
+  }
+  match /{document=**} { allow read, write: if false; }
+ }
+}`;
+async function cloudCopyRules(){try{await navigator.clipboard.writeText(FIRESTORE_RULES);cloudStatus('Règles copiées. Colle-les dans Firestore → Règles, puis Publier.')}catch(e){cloudStatus('Sélectionne les règles ci-dessous pour les copier.')}}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)cloudPause();else{cloudListen();if(cloud.ready)cloudPush()}});
+document.addEventListener('focusout',()=>setTimeout(()=>{if(cloud.remote&&!cloud.writing&&!cloudMeta.pending&&cloud.remote.revision!==cloud.version&&!['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))try{cloudApply(cloud.remote)}catch(e){cloudError(e)}},0));
+
+cloudRules.textContent=FIRESTORE_RULES;cloudStatus(cloud.message);
 normalizeState();fillUEFilters();loadSettingsUI();renderAll();decorateNavigation();
 setInterval(()=>{renderDashboard();renderReminders();},60000);
 </script>
