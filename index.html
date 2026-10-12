@@ -91,7 +91,7 @@ body.project-locked #projectLock{background:#f4f6fb;isolation:isolate}
 .hourly-grid>.hour-axis,.hourly-grid>.hour-columns{height:1664px;min-height:1664px;align-self:start}
 .hourly-grid>.hour-columns{overflow:visible}.hour-column{touch-action:pan-y;overflow:hidden}
 @media(orientation:landscape) and (max-height:500px){.hourly-grid{grid-template-rows:32px 1664px!important}.hourly-grid>.hour-head-empty,.hourly-grid>.hour-day-head{min-height:32px}}
-</style><style>.profile-avatar,.avatar-option img{aspect-ratio:1/1;object-fit:cover;object-position:center;flex-shrink:0;image-rendering:auto}</style></head>
+</style><style>.profile-avatar,.avatar-option img{aspect-ratio:1/1;object-fit:cover;object-position:center;flex-shrink:0;image-rendering:auto}</style><style>.course-work-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap;max-width:310px}.course-work-actions .mini{width:100%}@media(max-width:650px){.item-row .course-work-actions{grid-column:1/-1;grid-row:auto;max-width:none}.item-row .course-work-actions button{grid-column:auto;grid-row:auto;min-height:44px}}#completedWorkDialog{max-width:650px;width:calc(100% - 24px);box-sizing:border-box}</style></head>
 <body class="project-locked">
 <div id="quitOverlay" class="quit-overlay" hidden><div class="card"><h2 id="quitTitle">Sauvegarde avant fermeture</h2><p id="quitMessage" role="status" aria-live="polite">Enregistrement dans Firebase…</p><button id="quitReturn" class="btn primary" hidden onclick="quitOverlay.hidden=true">Rouvrir le carnet</button></div></div>
 <div id="projectLock" class="project-lock"><form class="card lock-card" onsubmit="event.preventDefault();unlockProject()"><h1>Connexion</h1><p>Saisis ton code à six chiffres.</p><label for="unlockCode">Code d’accès</label><input id="unlockCode" type="password" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="off" required autofocus><button class="btn primary" type="submit">Se connecter</button><p id="lockStatus" role="status" aria-live="polite"></p></form></div>
@@ -99,7 +99,7 @@ body.project-locked #projectLock{background:#f4f6fb;isolation:isolate}
 <div id="hourMovePreview" class="hour-move-preview" role="status" aria-live="polite" hidden></div>
 <div class="app" id="appShell" hidden inert aria-hidden="true">
 <aside>
-  <div class="brand"><img id="profileAvatar" class="profile-avatar" width="52" height="52" alt="Avatar de Méloé"><span>Méloé<small>Mon carnet de révision · V32</small></span></div>
+  <div class="brand"><img id="profileAvatar" class="profile-avatar" width="52" height="52" alt="Avatar de Méloé"><span>Méloé<small>Mon carnet de révision · V33</small></span></div>
   <div class="nav">
     <button class="active" data-page="dashboard">Tableau de bord</button>
     <button data-page="programme">Programme & items</button>
@@ -110,7 +110,7 @@ body.project-locked #projectLock{background:#f4f6fb;isolation:isolate}
     <button data-page="etapes">Points d'étape</button>
     <button data-page="parametres">Paramètres</button>
   </div>
-  <div class="aside-foot">V32 · Sauvegarde locale et synchronisation Firebase après connexion.</div>
+  <div class="aside-foot">V33 · Sauvegarde locale et synchronisation Firebase après connexion.</div>
 </aside>
 
 <main>
@@ -166,8 +166,8 @@ body.project-locked #projectLock{background:#f4f6fb;isolation:isolate}
     </div>
   </div>
   <div class="card" style="margin-top:16px">
-    <div class="section-title"><h2>Items du programme</h2><span class="mini" id="itemCountLabel"></span></div>
-    <div class="form-grid" style="margin-bottom:12px"><input id="itemSearch" placeholder="Rechercher une référence, une notion…" oninput="renderItems()"><select id="ueFilter" onchange="renderItems()"><option value="">Toutes les UE</option><option>UE1A</option><option>UE1B</option><option>UE1E</option><option>UE1F</option><option>UE1G</option></select></div><div id="itemsList"></div>
+    <div class="section-title"><h2>Items du programme</h2><div class="actions"><span class="mini" id="itemCountLabel"></span><button class="btn primary" onclick="openCompletedWork()">✓ J’ai travaillé</button></div></div>
+    <div class="form-grid" style="margin-bottom:12px"><input id="itemSearch" placeholder="Rechercher une référence, une notion…" oninput="renderItems()"><select id="ueFilter" onchange="renderItems()"><option value="">Toutes les UE</option><option>UE1A</option><option>UE1B</option><option>UE1E</option><option>UE1F</option><option>UE1G</option></select></div><p class="mini">Enregistre ici tes passages réalisés, même sans séance au calendrier. Chaque passage compte dans ta progression et tes rappels.</p><div id="itemsList"></div>
   </div>
 </section>
 
@@ -226,10 +226,11 @@ body.project-locked #projectLock{background:#f4f6fb;isolation:isolate}
 dialog{border:1px solid var(--line);border-radius:18px;width:min(620px,95vw);max-height:90vh;overflow:auto;padding:22px;color:var(--ink)}dialog::backdrop{background:#17213a99}
 @media(max-width:650px){.item-row{grid-template-columns:1fr auto}.item-row>*:not(:first-child):not(:last-child){display:block;grid-column:1}.item-row button{grid-column:2;grid-row:1}.nav button{white-space:nowrap}.actions .btn{font-size:12px}.calendar{overflow-x:auto}.session{cursor:pointer}}
 </style>
+<dialog id="completedWorkDialog"><h2>J’ai travaillé</h2><p class="mini">Ce travail sera comptabilisé immédiatement, sans ajouter de séance au calendrier.</p><div class="form-grid"><div><label for="completedWorkUE">Unité d’enseignement</label><select id="completedWorkUE" onchange="fillCompletedCourses()"></select></div><div><label for="completedWorkCourse">Cours travaillé</label><select id="completedWorkCourse" onchange="describeCompletedWork()"></select></div><div><label for="completedWorkCount">Nombre de passages réalisés</label><input id="completedWorkCount" type="number" min="1" max="20" step="1" value="1"></div></div><p id="completedWorkHint" class="mini"></p><p id="completedWorkStatus" role="status" aria-live="polite"></p><div class="actions"><button class="btn primary" onclick="saveCompletedWork()">Enregistrer le travail fait</button><button class="btn" onclick="completedWorkDialog.close()">Fermer</button></div></dialog>
 <dialog id="itemDialog"><h2>Réglages de l’item</h2><input id="editId" type="hidden"><div class="form-grid">
 <div style="grid-column:1/-1"><label>Intitulé</label><input id="editName"></div>
 <div><label>UE</label><input id="editBlock"></div><div><label>Discipline</label><input id="editDiscipline"></div>
-<div style="grid-column:1/-1"><label>Pictogramme du cours</label><select id="editPicto"></select><div id="editPictoPreview" style="margin-top:8px"></div><p class="mini">Le mode automatique associe un pictogramme au thème du cours. Tu peux aussi le choisir toi-même.</p></div><div><label>Passages souhaités au total</label><input id="editTarget" type="number" min="1" max="20"></div><div><label>Passages réalisés avant ce planning</label><input id="editPrior" type="number" min="0" max="100"></div>
+<div style="grid-column:1/-1"><label>Pictogramme du cours</label><select id="editPicto"></select><div id="editPictoPreview" style="margin-top:8px"></div><p class="mini">Le mode automatique associe un pictogramme au thème du cours. Tu peux aussi le choisir toi-même.</p></div><div><label>Passages souhaités au total</label><input id="editTarget" type="number" min="1" max="20"></div><div><label>Passages réalisés hors calendrier</label><input id="editPrior" type="number" min="0" max="100"></div>
 <div><label>Durée d’un passage (min)</label><input id="editDuration" type="number" min="10" max="1440"></div><div><label>Priorité</label><select id="editPriority"><option value="3">Haute</option><option value="2">Normale</option><option value="1">Faible</option></select></div>
 <div><label>Inclure dans le planning</label><select id="editActive"><option value="1">Oui</option><option value="0">Non</option></select></div><div><label>Maîtrise estimée (%)</label><input id="editMastery" type="number" min="0" max="100"></div><div><label>Notes</label><textarea id="editNotes"></textarea></div></div>
 <p class="mini">Les passages antérieurs s’ajoutent aux séances validées. Après modification des objectifs ou des durées, régénérer le planning pour mettre à jour les séances à venir.</p>
@@ -470,11 +471,36 @@ function deleteItem(id){state.items=state.items.filter(x=>x.id!==id);state.sessi
 function setMastery(id,v){const i=state.items.find(x=>x.id===id);if(i){i.mastery=+v;save()}}
 function itemDoneCount(id){return +(state.items.find(i=>i.id===id)?.priorDone||0)+state.sessions.filter(s=>s.itemId===id&&s.done).length}
 function itemPlannedCount(id){return state.sessions.filter(s=>s.itemId===id).length}
+function openCompletedWork(id=''){
+ const item=state.items.find(i=>i.id===id),ues=[...new Set(state.items.map(i=>i.block).filter(Boolean))].sort();
+ completedWorkUE.innerHTML=ues.map(ue=>`<option value="${esc(ue)}">${esc(ue)}</option>`).join('');completedWorkUE.value=item?.block||ues[0]||'';completedWorkCount.value=1;completedWorkStatus.textContent='';fillCompletedCourses();if(item)completedWorkCourse.value=id;describeCompletedWork();completedWorkDialog.showModal();
+}
+function fillCompletedCourses(){
+ const list=state.items.filter(i=>i.block===completedWorkUE.value);
+ completedWorkCourse.innerHTML='<option value="">Choisir un cours…</option>'+list.map(i=>`<option value="${i.id}">${esc(i.reference||i.id)} · ${esc(i.name)}</option>`).join('')+'<option value="all">Tous les cours actifs de cette UE</option>';completedWorkCourse.value='';describeCompletedWork();
+}
+function describeCompletedWork(){
+ const all=completedWorkCourse.value==='all',count=state.items.filter(i=>i.block===completedWorkUE.value&&i.active!==false).length;
+ completedWorkHint.textContent=all?'Chaque passage sera ajouté aux '+count+' cours actifs de cette UE. Choisis cette option seulement si tu les as tous travaillés.':'Un passage représente une fois où tu as travaillé ce cours. Les séances du calendrier restent indépendantes.';
+}
+function recordCompletedPasses(ids,count){
+ if(!Number.isInteger(count)||count<1||count>20||!ids.length)return false;
+ const items=[...new Set(ids)].map(id=>state.items.find(i=>i.id===id));if(items.some(i=>!i))return false;
+ for(const i of items)i.priorDone=(i.priorDone||0)+count;
+ state.planGenerated=false;state.unscheduled=[];save();return true;
+}
+function addCompletedPass(id){if(recordCompletedPasses([id],1))toast('Passage comptabilisé, sans ajout au calendrier.')}
+function saveCompletedWork(){
+ const count=Number(completedWorkCount.value),ue=completedWorkUE.value,choice=completedWorkCourse.value;
+ const ids=choice==='all'?state.items.filter(i=>i.block===ue&&i.active!==false).map(i=>i.id):state.items.filter(i=>i.id===choice&&i.block===ue).map(i=>i.id);
+ if(!recordCompletedPasses(ids,count)){completedWorkStatus.textContent='Choisis un cours et un nombre entier de passages entre 1 et 20.';return}
+ completedWorkDialog.close();toast(ids.length===1?'Travail comptabilisé, sans ajout au calendrier.':ids.length+' cours comptabilisés, sans ajout au calendrier.');
+}
 function renderItems(){
  itemCountLabel.textContent=state.items.length+" item(s)";
  const q=itemSearch.value.toLocaleLowerCase('fr').trim(),ue=ueFilter.value;
  const list=state.items.filter(i=>(!ue||i.block===ue)&&(!q||[i.name,i.reference,i.block,i.discipline].join(' ').toLocaleLowerCase('fr').includes(q)));
- itemsList.innerHTML=list.length?list.map(i=>`<div class="item-row"><div><strong>${courseIcon(i)} ${esc(i.reference||i.id)} — ${esc(i.name)}</strong><div class="mini">${esc(i.block)} · ${esc(i.discipline)} · ${i.duration} min · maîtrise ${i.mastery||0}%${i.active===false?" · Non planifié":""}</div></div><div><span class="badge todo">${itemDoneCount(i.id)}/${i.target} passages</span></div><div class="bar"><span style="width:${Math.min(100,itemDoneCount(i.id)/i.target*100)}%"></span></div><button class="btn" onclick="editItem('${i.id}')">Régler</button></div>`).join(''):'<div class="empty">Aucun item trouvé.</div>';
+ itemsList.innerHTML=list.length?list.map(i=>`<div class="item-row"><div><strong>${courseIcon(i)} ${esc(i.reference||i.id)} — ${esc(i.name)}</strong><div class="mini">${esc(i.block)} · ${esc(i.discipline)} · ${i.duration} min · maîtrise ${i.mastery||0}%${i.active===false?" · Non planifié":""}</div></div><div><span class="badge todo">${itemDoneCount(i.id)}/${i.target} passages</span></div><div class="bar"><span style="width:${Math.min(100,itemDoneCount(i.id)/i.target*100)}%"></span></div><div class="course-work-actions"><button class="btn primary" onclick="addCompletedPass('${i.id}')">✓ +1 passage</button><button class="btn" onclick="openCompletedWork('${i.id}')">J’ai travaillé…</button><button class="btn" onclick="editItem('${i.id}')">Régler</button><span class="mini">${i.priorDone||0} hors calendrier</span></div></div>`).join(''):'<div class="empty">Aucun item trouvé.</div>';
 }
 function saveSettings(){
  const settings={startDate:startDate.value,deadline:deadline.value,weekdayHours:Number(weekdayHours.value),weekendHours:Number(weekendHours.value),spacingDays:Number(spacingDays.value),offDates:[...(state.settings.offDates||[])]};
@@ -849,7 +875,7 @@ const MEDICAL_ICONS={
  microscope:{label:'Microscope / analyses',shape:'<path d="M7 29h21M11 29v-5h10M9 21h12M20 10c11 3 11 15 1 15M12 3l9 5-6 11-9-5 6-11zM11 5l8 5M16 18l-3 4"/>'},
  thermometer:{label:'Thermomètre / symptômes',shape:'<path d="M12 21V6a4 4 0 0 1 8 0v15a7 7 0 1 1-8 0zM16 9v15m7-15h4m-4 5h3m-3 5h4"/><circle cx="16" cy="25" r="2"/>'},
  stethoscope:{label:'Stéthoscope / soins',shape:'<path d="M5 3v8c0 10 14 10 14 0V3M5 3h3m11 0h-3M12 19v5c0 7 14 7 14-1v-4"/><circle cx="26" cy="16" r="3"/>'},
- people:{label:'Population / santé publique',shape:'<circle cx="16" cy="8" r="4"/><circle cx="6" cy="13" r="3"/><circle cx="26" cy="13" r="3"/><path d="M9 28V18c0-6 14-6 14 0v10H9zM3 28V32c0-3 3-4 6-3m14 0c3-1 6 0 6 3v8M13 28v-5m6 5v-5"/>'},
+ people:{label:'Population / santé publique',shape:'<circle cx="16" cy="8" r="4"/><circle cx="6" cy="13" r="3"/><circle cx="26" cy="13" r="3"/><path d="M9 28V18c0-6 14-6 14 0v10H9zM3 28V33c0-3 3-4 6-3m14 0c3-1 6 0 6 3v8M13 28v-5m6 5v-5"/>'},
  leaf:{label:'Environnement / santé',shape:'<path d="M4 25C1 10 14 4 28 4c1 15-7 28-21 22L4 25zm0 4L24 9M11 22v-9m3 6h10M19 14V7"/>'},
  communication:{label:'Communication / relations',shape:'<path d="M3 5h20v14H11l-6 5v-5H3V5zm10 18h8l6 5v-5h2V12h-3M7 10h12M7 14h9"/>'},
  document:{label:'Documentation / méthode',shape:'<path d="M7 3h13l6 6v20H7V3zm13 0v7h6M11 15h11m-11 5h11m-11 5h8"/>'},
